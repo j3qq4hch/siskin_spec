@@ -35,9 +35,12 @@
   <component name="RESISTOR" library="rc"> … </component>
 
   <class name="POWER" width="500" drill="600" />
-  <module name="DCDC" dx="20320" dy="15240"> … </module>
+  <module name="DCDC">                  <!-- внешность + своя схема -->
+    <symbol> … </symbol>
+    <schematic> … </schematic>
+  </module>
 
-  <schematic> … </schematic>            <!-- ровно один -->
+  <schematic> … </schematic>            <!-- холст изделия, ровно один -->
   <layout stack="35[1500]35"> … </layout>
 </project>
 ```
@@ -86,6 +89,8 @@
 ## Правила
 
 - **`<schematic>` ровно один; `<layout>` — сколько угодно**, включая ноль.
+  Схемы внутри [модулей](module.md) холстом изделия не являются и этого счёта
+  не меняют.
 - Ссылка на [символ](symbol.md) или [корпус](footprint.md) обязана разрешаться
   внутри проекта — висячих ссылок не бывает.
 - **Идентичность компонента — его designator.** По нему
