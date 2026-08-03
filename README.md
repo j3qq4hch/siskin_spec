@@ -28,6 +28,7 @@
 | [Имя, атрибут, плейсхолдер](naming.md) | Формальная модель: три разных факта, которые нельзя смешивать |
 | [Плейсхолдеры](placeholders.md) | Режим по первому символу: `>` подставить, `=` вычислить |
 | [Рамка листа](frame.md) | Страница на холсте схемы — символ с `<shape>` на слое `98` |
+| [Символ питания](power-symbol.md) | Ярлык с именем шины — символ с выводом `sup` |
 
 ### Примитивы графики
 
@@ -164,6 +165,7 @@
 [`<passthrough>`](passthrough.md) · [`<pin>`](pin.md) ·
 [`<pinref>`](pinref.md) ·
 [Плейсхолдеры](placeholders.md) · [`<polygon>`](polygon.md) ·
+[Символ питания](power-symbol.md) ·
 [Рамка листа](frame.md) ·
 [`<project>`](project.md) · [`<rules>`](rules.md) ·
 [`<schematic>`](schematic.md) · [`<segment>`](segment.md) · [`<shape>`](shape.md) ·
