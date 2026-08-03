@@ -6,7 +6,7 @@
 |---|---|
 | **Встречается в** | проект |
 | **Родители** | [`<project>`](project.md) |
-| **Дети** | [`<compinst>`](component-instance.md), [`<modinst>`](module-instance.md), [`<net>`](net.md), [`<line>`](line.md), [`<text>`](text.md), [`<note>`](note.md), [`<attr>`](attr.md), [`<layer>`](layer.md) |
+| **Дети** | [`<compinst>`](component-instance.md), [`<modinst>`](module-instance.md), [`<net>`](net.md), [`<variant>`](variant.md), [`<line>`](line.md), [`<text>`](text.md), [`<note>`](note.md), [`<attr>`](attr.md), [`<layer>`](layer.md) |
 
 ## Атрибуты
 

@@ -11,7 +11,7 @@
 |---|---|
 | **Встречается в** | проект |
 | **Родители** | [`<project>`](project.md) |
-| **Дети** | [`<symbol>`](symbol.md) + содержимое [схемы](schematic.md) |
+| **Дети** | [`<symbol>`](symbol.md), [`<variant>`](variant.md) + содержимое [схемы](schematic.md) |
 
 ## Атрибуты
 

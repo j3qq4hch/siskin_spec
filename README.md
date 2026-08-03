@@ -96,6 +96,7 @@
 | [`<junction>`](junction.md) | Точка соединения |
 | [`<label>`](label.md) | Метка цепи |
 | [`<pinref>`](pinref.md) | Подключение к выводу инстанса — детали **или** модуля |
+| [`<variant>`](variant.md) | Вариант сборки — что не паяем и с какими значениями |
 | [`<note>`](note.md) | Блок markdown — «textbox»; ширина задана, высота от контента |
 | ↗ [`<line>`](line.md) [`<text>`](text.md) | Оформление листа |
 
@@ -105,6 +106,7 @@
 |---|---|
 | [`<module>`](module.md) | Определение модуля — переиспользуемый кусок схемы |
 | ↗ [`<pin>`](pin.md) | Пин модуля — то, что раньше звалось портом |
+| ↗ [`<variant>`](variant.md) | Свои варианты сборки у модуля; канал выбирает один |
 | [`<modinst>`](module-instance.md) | Экземпляр модуля — канал |
 | ↗ [`<pinref>`](pinref.md) | Подключение к пину модуля — тот же тег, что у детали |
 
@@ -166,4 +168,4 @@
 [`<schematic>`](schematic.md) · [`<segment>`](segment.md) · [`<shape>`](shape.md) ·
 [`<signal>`](signal.md) · [`<smd>`](smd.md) · [`<symbol>`](symbol.md) ·
 [`<text>`](text.md) · [Единицы](units.md) ·
-[`<vertex>`](vertex.md) · [`<via>`](via.md)
+[`<variant>`](variant.md) · [`<vertex>`](vertex.md) · [`<via>`](via.md)
