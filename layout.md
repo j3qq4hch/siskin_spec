@@ -6,7 +6,7 @@
 |---|---|
 | **Встречается в** | проект |
 | **Родители** | [`<project>`](project.md) |
-| **Дети** | [`<rules>`](rules.md), [`<layer>`](layer.md), [`<element>`](element.md), [`<signal>`](signal.md), [`<line>`](line.md), [`<arc>`](arc.md), [`<shape>`](shape.md), [`<polygon>`](polygon.md), [`<text>`](text.md), [`<note>`](note.md), [`<hole>`](hole.md), [`<attr>`](attr.md), [`<passthrough>`](passthrough.md) |
+| **Дети** | [`<rules>`](rules.md), [`<layer>`](layer.md), [`<element>`](element.md), [`<signal>`](signal.md), [`<line>`](line.md), [`<arc>`](arc.md), [`<shape>`](shape.md), [`<polygon>`](polygon.md), [`<text>`](text.md), [`<note>`](note.md), [`<hole>`](hole.md), [`<attr>`](attr.md) |
 
 ## Атрибуты
 

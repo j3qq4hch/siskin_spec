@@ -129,7 +129,6 @@
 | ↗ [`<line>`](line.md) [`<arc>`](arc.md) [`<text>`](text.md) [`<hole>`](hole.md) | Контур платы, документация, крепёж |
 | ↗ [`<note>`](note.md) | Markdown и на плате — таблица распиновки на шёлкографии. Картинки запрещены |
 | [`<rules>`](rules.md) | Правила проектирования — зазоры, минимумы |
-| [`<passthrough>`](passthrough.md) | Вендорские данные, которые не переносим, но и не теряем |
 
 ---
 
@@ -162,7 +161,7 @@
 [`<model3d>`](model3d.md) · [`<modinst>`](module-instance.md) ·
 [`<module>`](module.md) · [Имена](naming.md) ·
 [`<net>`](net.md) · [`<note>`](note.md) · [`<pad>`](pad.md) ·
-[`<passthrough>`](passthrough.md) · [`<pin>`](pin.md) ·
+[`<pin>`](pin.md) ·
 [`<pinref>`](pinref.md) ·
 [Плейсхолдеры](placeholders.md) · [`<polygon>`](polygon.md) ·
 [Символ питания](power-symbol.md) ·
