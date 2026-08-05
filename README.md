@@ -144,7 +144,7 @@
 | Страница | О чём | |
 |---|---|---|
 | [Общий контракт](conversion.md) | Четыре обещания, обязательность лога, гигиена источника, выгрузка библиотеки из проекта | ✅ |
-| Из/в Eagle | | ⏳ |
+| [Из/в Eagle](conversion-eagle.md) | Самый близкий из трёх. Три уровня Eagle против двух наших: `technology` разворачивается в отдельные компоненты | ✅ |
 | Из/в KiCad | | ⏳ |
 | Из/в Altium | | ⏳ |
 
@@ -165,6 +165,7 @@
 [`<arc>`](arc.md) · [`<attr>`](attr.md) ·
 [`<class>`](class.md) · [`<component>`](component.md) ·
 [`<contactref>`](contactref.md) · [Конвертация](conversion.md) ·
+[Конвертация: Eagle](conversion-eagle.md) ·
 [`<device>`](device.md) · [`<element>`](element.md) · [`<footprint>`](footprint.md) · [`<gate>`](gate.md) ·
 [`<compinst>`](component-instance.md) · [`<hole>`](hole.md) · [`<junction>`](junction.md) ·
 [`<label>`](label.md) · [`<layer>`](layer.md) ·
