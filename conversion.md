@@ -3,8 +3,9 @@
 *не элемент формата, а обязательства конвертера*
 
 Действует для всех трёх инструментов. Отдельные страницы —
-[Eagle](conversion-eagle.md), [KiCad](conversion-kicad.md), Altium — описывают частности и **не вправе**
-этому противоречить.
+[Eagle](conversion-eagle.md), [KiCad](conversion-kicad.md),
+[Altium](conversion-altium.md) — описывают частности и **не вправе** этому
+противоречить.
 
 ## Четыре обязательства
 
