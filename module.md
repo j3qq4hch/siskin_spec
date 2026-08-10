@@ -33,13 +33,14 @@
     <shape x="0" y="0" w="20320" h="15240" outline="152" layer="94" />
     <pin name="VIN"    x="-10160" y="5080" rot="180000" direction="pwr" />
     <pin name="VDD_5V" x="10160"  y="0"    rot="0"      direction="pwr" />
-    <text x="0" y="9000" size="1270" layer="95" align="center-center">&gt;NAME</text>
+    <text x="0" y="9000" height="1270" layer="95" align="center-center">&gt;NAME</text>
   </symbol>
 
   <schematic>                                 <!-- СОДЕРЖИМОЕ -->
-    <compinst name="IC1" component="TPS54360" … />
+    <part name="IC1" library="ti" component="TPS54360" device="-VQFN" />
+    <compinst part="IC1" gate="" x="0" y="0" />
     <net name="FB"> … </net>
-    <text x="0" y="-20000" size="1270" layer="99">про делитель</text>
+    <text x="0" y="-20000" height="1270" layer="99">про делитель</text>
     <variant name="3V3"> … </variant>
   </schematic>
 </module>

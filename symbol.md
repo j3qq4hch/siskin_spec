@@ -26,7 +26,7 @@
   …
   <pin name="1" x="-5080" y="0" rot="0"      length="2540" direction="pas" />
   <pin name="2" x="5080"  y="0" rot="180000" length="2540" direction="pas" />
-  <text x="0" y="0" size="1270" layer="95" align="center">&gt;NAME</text>
+  <text x="0" y="0" height="1270" layer="95" align="center-center">&gt;NAME</text>
 </symbol>
 ```
 

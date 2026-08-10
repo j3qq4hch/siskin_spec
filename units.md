@@ -102,7 +102,7 @@
 
 | Величина | Диапазон | Где |
 |---|---|---|
-| `roundness` | `0 … 100` | [`<shape>`](shape.md), [`<smd>`](smd.md) |
+| `roundness` | `0 … 100` | [`<shape>`](shape.md), [`<smd>`](smd.md), [`<pad>`](pad.md) |
 | `thermals` | `0 … 100` | [`<polygon>`](polygon.md) |
 | `ratio` | проценты | [`<text>`](text.md) — толщина штриха к высоте |
 
