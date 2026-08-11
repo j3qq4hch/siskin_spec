@@ -1,0 +1,638 @@
+# =====================================================================
+#  Siskin IR — формальная грамматика
+#  RELAX NG, компактный синтаксис (.rnc)
+#
+#  Источник истины — страницы спецификации. Эта схема их не заменяет и
+#  не дополняет: она переписывает машинно ту их часть, которая машинно
+#  выразима. Разошлась со страницей — права страница.
+#
+#  ЧТО ЭТО ЛОВИТ
+#    структуру   — какой тег где лежит, сколько раз, какие атрибуты
+#    домены      — enum'ы, диапазоны, целочисленность, int32 у длин
+#    контекст    — провод без layer, ортогональный поворот в схеме,
+#                  корпус vs плата, схема документа vs схема модуля
+#    грамматики  — формула стека, номер слоя, список падов, цвет
+#
+#  ЧЕГО ЭТО НЕ ЛОВИТ — и не может: у RELAX NG нет ключей и ссылок
+#    уникальность    — «name уникально в библиотеке», «пара (part,gate)»
+#    ссылочность     — gate/symbol/footprint/part/pad/class существуют
+#    арифметику      — drill < min(width,height), diameter > drill
+#    структурные     — «медный слой обязан быть в стеке», «ровно один
+#                      <shape> на 98 в символе рамки», «сегменты одной
+#                      цепи не касаются», «есть пады — нужен гейт»
+#    согласие сторон — <contactref> против <pinref> через <map>
+#    формулы         — «в глобальных атрибутах value только литерал»:
+#                      выразимо регуляркой лишь ценой запрета литерала =
+#                      где угодно ещё
+#  Всё это — код валидатора. Схема отсекает мусор до него, а не вместо.
+#
+#  СТАТУС. Схема написана по спецификации, то есть по ЦЕЛЕВОМУ формату.
+#  Код Babel местами живёт по-старому — см. reasoning.md, 49 записей
+#  «в коде не сделано». Файл, прошедший эту схему, не обязан читаться
+#  сегодняшним Babel, и наоборот.
+#
+#  НЕ ПРОВЕРЕНА ВАЛИДАТОРОМ. Синтаксис вычитан глазами, jing не
+#  запускался ни разу. Первое, что стоит сделать перед использованием.
+#
+#  СБОРКА
+#    trang siskin-ir.rnc siskin-ir.rng     # XML-форма для libxml2 и codegen
+#    jing siskin-ir.rnc board.siprj       # проверить файл
+# =====================================================================
+
+datatypes xsd = "http://www.w3.org/2001/XMLSchema-datatypes"
+
+start = library | project
+
+
+# =====================================================================
+#  0. ДОМЕНЫ — units.md, layer-model.md
+# =====================================================================
+
+# Длины. Целые микрометры, int32 — потолок ±2.147 м взят из типа.
+um        = xsd:int
+um-pos    = xsd:int { minInclusive = "1" }
+um-nonneg = xsd:int { minInclusive = "0" }
+
+# Углы. Целые миллиградусы.
+rot-free  = xsd:integer { minInclusive = "0" maxInclusive = "359999" }
+
+# В схемном пространстве поворот кратен 90°.
+rot-ortho = "0" | "90000" | "180000" | "270000"
+
+# curve знаковый; 0 — это <line>, ±360000 — это <shape roundness="100">.
+curve =
+    xsd:integer { minInclusive = "-359999" maxInclusive = "-1" }
+  | xsd:integer { minInclusive = "1"       maxInclusive = "359999" }
+
+# Проценты целые.
+percent = xsd:integer { minInclusive = "0" maxInclusive = "100" }
+
+# Булево — только 0 и 1. Ни yes/no, ни true/false, ни «ненулевое».
+bool = "0" | "1"
+
+# Номер слоя в объявлении <layer>: знаковое целое, не 0.
+layer-num =
+    xsd:int { maxInclusive = "-1" }
+  | xsd:int { minInclusive = "1" }
+
+# Ссылка на слой у геометрии: [!][-]N. ! и − — независимые оси.
+layer-ref = xsd:token { pattern = "!?-?[1-9][0-9]*" }
+
+# Медь стека: |n| < 100. Ровно тот тест, что is_copper.
+layer-copper = xsd:token { pattern = "-?[1-9][0-9]?" }
+
+# Металлизация торца — единственный не-стековый слой внутри <signal>.
+layer-plating = "146"
+
+# Имя пада: без пробелов — пробел разделяет имена в <map pad="12 EP">.
+pad-name = xsd:token { pattern = "[^ ]+" }
+pad-list = xsd:token { pattern = "[^ ]+( [^ ]+)*" }
+
+# Сетка 3×3, все девять равноправны, «вертикаль-горизонталь».
+align-value =
+    "top-left"    | "top-center"    | "top-right"
+  | "center-left" | "center-center" | "center-right"
+  | "bottom-left" | "bottom-center" | "bottom-right"
+
+# Электрический характер вывода. nc здесь нет: не разварен — не создан.
+direction-value = "in" | "out" | "io" | "pas" | "pwr" | "sup" | "oc" | "hiz"
+
+# Стиль метки — подмножество direction плюс crummy.
+label-style = "crummy" | "in" | "out" | "io" | "pwr" | "pas"
+
+# Предназначение атрибута. Ось для редактора: импорт даёт только general.
+attr-type = "bom" | "sim" | "general" | "service"
+
+side-value = "top" | "bottom"
+
+# Цвет с альфой, RRGGBBAA.
+color-value = xsd:token { pattern = "[0-9a-fA-F]{8}" }
+
+# Формула стека: медь[диэлектрик]медь…, диэлектрик — толщина[:ε[:tanδ]].
+# Регулярка держит сразу три правила страницы <layout>: строгое
+# чередование, начало и конец медью, и «меньше двух слоёв не выражается».
+stack-formula =
+  xsd:token {
+    pattern = "[1-9][0-9]*(\[[1-9][0-9]*(:[0-9]+(\.[0-9]+)?){0,2}\][1-9][0-9]*)+"
+  }
+
+
+# =====================================================================
+#  1. ПРИМИТИВЫ ГРАФИКИ
+#
+#  Роль отрезка решает контейнер, не атрибут. Отсюда три варианта
+#  <line>: провод (слоя нет вовсе), дорожка (слой медный либо 146)
+#  и графика (слой любой). У <shape> и <text> варианта два — по тому,
+#  ортогонально пространство или нет.
+# =====================================================================
+
+seg-coords = attribute x1 { um }, attribute y1 { um },
+             attribute x2 { um }, attribute y2 { um }
+
+# Графика: контур символа, шёлкография, контур платы, документация.
+line-graphic =
+  element line {
+    seg-coords,
+    attribute width { um-nonneg },
+    attribute layer { layer-ref }
+  }
+
+# Провод схемы. layer не пишется: принадлежность цепи даёт <segment>.
+line-wire =
+  element line {
+    seg-coords,
+    attribute width { um-nonneg }
+  }
+
+# Медь цепи. Либо дорожка на меди с ненулевой толщиной, либо след
+# металлизированного торца на 146, у которого width физического смысла
+# не имеет и пишется 0.
+line-signal =
+  element line {
+    seg-coords,
+    ( attribute layer { layer-copper },  attribute width { um-pos }
+    | attribute layer { layer-plating }, attribute width { "0" } )
+  }
+
+arc-graphic =
+  element arc {
+    seg-coords,
+    attribute curve { curve },
+    attribute width { um-nonneg },
+    attribute layer { layer-ref }
+  }
+
+arc-signal =
+  element arc {
+    seg-coords,
+    attribute curve { curve },
+    ( attribute layer { layer-copper },  attribute width { um-pos }
+    | attribute layer { layer-plating }, attribute width { "0" } )
+  }
+
+# Прямоугольник, овал и круг — одна форма со шкалой скругления.
+# outline="0" (умолчание) — залита, иначе только контур этой толщины.
+shape-attrs =
+  attribute x { um }, attribute y { um },
+  attribute w { um-pos }, attribute h { um-pos },
+  attribute roundness { percent }?,
+  attribute outline { um-nonneg }?,
+  attribute layer { layer-ref }
+
+shape-sch = element shape { shape-attrs, attribute rot { rot-ortho }? }
+shape-brd = element shape { shape-attrs, attribute rot { rot-free  }? }
+
+# Полигон — модель пера. Контур замкнут по построению, минимум три
+# вершины, обход CCW (направление обхода схемой не проверяется).
+polygon-attrs =
+  attribute layer { layer-ref },
+  attribute fill { percent }?,
+  vertex, vertex, vertex, vertex*
+
+# Медь цепи: перо задаёт и минимальную ширину меди, и шаг штриховки.
+polygon-signal =
+  element polygon {
+    attribute width { um-pos },
+    attribute rank { xsd:integer { minInclusive = "1" maxInclusive = "6" } }?,
+    attribute thermals { bool }?,
+    attribute clearance { um-nonneg }?,
+    polygon-attrs
+  }
+
+# Вне меди: заливка без обводки законна, rank/thermals/clearance
+# физического смысла не имеют и потому не пишутся.
+polygon-free =
+  element polygon {
+    attribute width { um-nonneg },
+    polygon-attrs
+  }
+
+# curve описывает ребро, ВЫХОДЯЩЕЕ из этой вершины; отсутствие — прямое.
+vertex =
+  element vertex {
+    attribute x { um }, attribute y { um },
+    attribute curve { curve }?
+  }
+
+# Текстовая аннотация. align обязателен — умолчания нет.
+# Шрифт один, поэтому атрибута font не существует.
+txt-attrs =
+  attribute layer { layer-ref },
+  attribute x { um }, attribute y { um },
+  attribute height { um-pos },
+  attribute width { um-pos }?,
+  attribute mirror { bool }?,
+  attribute align { align-value },
+  attribute ratio { percent }?
+
+txt-sch = element \text { txt-attrs, attribute rot { rot-ortho }?, text }
+txt-brd = element \text { txt-attrs, attribute rot { rot-free  }?, text }
+
+# Пользовательский атрибут. Обёртки <attributes> нет.
+# Пустое value — объявление ключа, а не отсутствие: не выбрасывать.
+attr =
+  element attr {
+    attribute name { text },
+    attribute value { text },
+    attribute type { attr-type }?
+  }
+
+# Объявление слоя. number=0 запрещён — нулю некуда деть знак.
+layer =
+  element layer {
+    attribute number { layer-num },
+    attribute name { text }?,
+    attribute color { color-value }?,
+    attribute visible { bool }?
+  }
+
+# Markdown-блок. h — минимум, а не потолок. Содержимое — текст элемента.
+note =
+  element note {
+    attribute x { um }, attribute y { um },
+    attribute w { um-pos }, attribute h { um-nonneg },
+    attribute rot { rot-ortho }?,
+    attribute size { um-pos },
+    attribute ratio { percent }?,
+    attribute layer { layer-ref },
+    text
+  }
+
+
+# =====================================================================
+#  2. КОМПОНЕНТ — содержимое .silib
+# =====================================================================
+
+library =
+  element library {
+    attribute name { text },
+    ( symbol-pooled* & footprint* & component-lib* )
+  }
+
+# Символ живёт в пуле и адресуется гейтом по имени.
+symbol-content = ( line-graphic | arc-graphic | shape-sch | polygon-free
+                 | pin | txt-sch )*
+
+symbol-pooled = element symbol { attribute name { text }, symbol-content }
+
+# Символ модуля — внешность канала. Имени нет: его никто не адресует.
+symbol-anon   = element symbol { symbol-content }
+
+# Вывод блока — детали или модуля, геометрия одна и та же.
+# «Порт или не порт» не хранится: вычисляется из того, чей это символ.
+pin =
+  element pin {
+    attribute name { text },
+    attribute direction { direction-value },
+    attribute x { um }, attribute y { um },
+    attribute rot { rot-ortho },
+    attribute length { um-nonneg }?,
+    attribute pinvis { bool }?,
+    attribute padvis { bool }?
+  }
+
+# Семейство: гейты + устройства + атрибуты. Дети лежат голыми.
+# library не пишется в .silib — там библиотека и есть файл.
+component-body =
+  attribute name { text },
+  attribute prefix { text }?,
+  ( gate | device | attr )*
+
+component-lib = element component { component-body }
+component-prj = element component { attribute library { text }, component-body }
+
+# Гейт — единственный способ объявить символ, даже для односекционного.
+# x/y — раскладка компонента в библиотеке, не размещение на схеме.
+gate =
+  element gate {
+    attribute name { text },
+    attribute symbol { text },
+    attribute x { um }, attribute y { um }
+  }
+
+# Устройство — соответствие символа корпусу. Здесь живут маппинг и
+# атрибуты: оба суть факт ПАРЫ, а не любой из половин.
+device =
+  element device {
+    attribute name { text },
+    attribute footprint { text },
+    ( map | attr )*
+  }
+
+# pad — список: вывод вправе прийти на несколько площадок.
+# Обратное запрещено, но уникальность пада схема не проверяет.
+map =
+  element map {
+    attribute gate { text },
+    attribute pin { text },
+    attribute pad { pad-list }
+  }
+
+# Корпус — чистая геометрия посадочного места, о символе не знает.
+# Пространство платы: поворот свободен.
+footprint =
+  element footprint {
+    attribute name { text },
+    ( line-graphic | arc-graphic | shape-brd | polygon-free | txt-brd
+    | pad | smd | hole | model3d )*
+  }
+
+# Сквозной пад. Слоя нет — пронизывает все медные слои по построению.
+# Пасты нет — его паяют волной, апертуре взяться неоткуда.
+pad =
+  element pad {
+    attribute name { pad-name },
+    attribute x { um }, attribute y { um },
+    attribute width { um-pos }, attribute height { um-pos },
+    attribute rot { rot-free }?,
+    attribute roundness { percent }?,
+    attribute drill { um-pos },
+    attribute thermals { percent }?,
+    attribute stopmask { bool }?
+  }
+
+# SMD-пад. layer обязателен и только медный: живёт на одном этаже.
+# Внутренних SMD не бывает — отсюда домен ровно из двух значений.
+smd =
+  element smd {
+    attribute name { pad-name },
+    attribute x { um }, attribute y { um },
+    attribute width { um-pos }, attribute height { um-pos },
+    attribute rot { rot-free }?,
+    attribute layer { "1" | "-1" },
+    attribute roundness { percent }?,
+    attribute thermals { percent }?,
+    attribute stopmask { bool }?,
+    attribute paste { bool }?
+  }
+
+# Отверстие без меди. Имени нет — ссылаться неоткуда.
+hole =
+  element hole {
+    attribute x { um }, attribute y { um },
+    attribute drill { um-pos }
+  }
+
+# key — голое ЗНАЧЕНИЕ атрибута экземпляра (RED, H11), не имя ключа.
+# Запись без key — безусловный fallback; «максимум одна» схемой не ловится.
+# Имя файла модели не хранится: выводится из имени корпуса.
+model3d =
+  element model3d {
+    attribute key { text }?,
+    attribute tx { um }?, attribute ty { um }?, attribute tz { um }?,
+    attribute rx { rot-free }?, attribute ry { rot-free }?,
+                                attribute rz { rot-free }?
+  }
+
+
+# =====================================================================
+#  3. СХЕМА — содержимое .siprj
+# =====================================================================
+
+# Проект самодостаточен: библиотеки вкомпилированы, а не подключены.
+# Схема ровно одна, плат сколько угодно, включая ноль.
+project =
+  element project {
+    attribute name { text },
+    ( symbol-pooled*
+    & footprint*
+    & component-prj*
+    & class*
+    & layer*
+    & module*
+    & schematic-doc
+    & layout* )
+  }
+
+# <layer> у проекта — таблица СХЕМНОГО пространства. Оно одно на проект,
+# поэтому и дом у неё здесь: ею пользуются холст изделия, схемы всех
+# модулей и все символы. Платных пространств столько, сколько плат —
+# их таблицы лежат детьми <layout>. Родитель задаёт пространство,
+# второго признака у слоя нет.
+
+# Именованный набор правил разводки. Состав закрыт: три свойства.
+# Обязательно только name — класс без правил законен.
+class =
+  element class {
+    attribute name { text },
+    attribute width { um-pos }?,
+    attribute clearance { um-nonneg }?,
+    attribute drill { um-pos }?,
+    attr*
+  }
+
+# --- Схема, и внутри модуля она та же самая --------------------------
+#
+# Отличие ровно одно: внутри модуля нет <modinst>, потому что иерархия
+# ровно один уровень. Всё прочее общее и вынесено в schematic-item.
+#
+# Различает два случая ПОЛОЖЕНИЕ: под <project> — холст изделия, под
+# <module> — содержимое модуля. Поля-дискриминатора (`top-level`) нет
+# намеренно: факт определён родителем, а второе его хранение породило
+# бы состояния, которые ничего не значат.
+#
+# <attr> есть у обеих: глобальные атрибуты определения — объявление
+# параметров канала и умолчаний, канал переопределяет их наследованием.
+# Формула в них запрещена, но это правило валидатора, не схемы:
+# «не начинается с =» выразимо регуляркой лишь ценой того, что литерал
+# = станет невозможен нигде.
+#
+# <layer> нет ни у одной: таблица схемных слоёв живёт у <project>.
+
+# Графика на холсте — обычные примитивы, без электрического смысла:
+# проводом отрезок делает контейнер <segment>, а не номер слоя.
+# polygon-free, а не polygon-signal: меди в схемном пространстве нет,
+# поэтому width="0" законен, а rank/thermals/clearance не пишутся.
+# Окна в буквах и логотипах даёт анти-слой — layer-ref допускает `!`.
+schematic-item = part | compinst | net | variant | attr
+               | line-graphic | arc-graphic | shape-sch | polygon-free
+               | txt-sch | note
+
+schematic-doc = element schematic { ( schematic-item | modinst )* }
+schematic-mod = element schematic { schematic-item* }
+
+# Деталь — физическая штука, одна на все свои секции. Здесь её адрес
+# и её атрибуты. exclude здесь нет: в базовой схеме стоит всё.
+# device не пишется у компонента без устройств — рамки, символа питания.
+part =
+  element part {
+    attribute name { text },
+    attribute library { text },
+    attribute component { text },
+    attribute device { text }?,
+    attr*
+  }
+
+# Размещение ОДНОЙ секции. Своего name нет: адресуют деталь.
+# Дети-<text> — исчерпывающий список плейсхолдеров; смэша как флага нет.
+compinst =
+  element compinst {
+    attribute part { text },
+    attribute gate { text },
+    attribute x { um }, attribute y { um },
+    attribute rot { rot-ortho }?,
+    attribute mirror { bool }?,
+    txt-sch*
+  }
+
+# Цепь. Всё, кроме имени, — обычные <attr>: class, value, max_current.
+net =
+  element net {
+    attribute name { text },
+    ( attr | segment )*
+  }
+
+# Связная группа проводов. Атрибутов нет — имя и свойства у цепи.
+# Точка соединения и петелька не хранятся: обе выводятся из структуры.
+segment =
+  element segment {
+    ( line-wire | label | pinref )*
+  }
+
+# Метка. Имя цепи в ней НЕ хранится — берётся у <net>.
+label =
+  element label {
+    attribute x { um }, attribute y { um },
+    attribute height { um-pos },
+    attribute width { um-pos }?,
+    attribute rot { rot-ortho }?,
+    attribute align { align-value },
+    attribute layer { layer-ref },
+    attribute style { label-style }?
+  }
+
+# Один тег на оба случая: цепи безразлично, деталь внутри или модуль.
+# gate пишется тогда и только тогда, когда inst — деталь; схема этого
+# не различает (нужен резолв inst), поэтому атрибут опционален.
+pinref =
+  element pinref {
+    attribute inst { text },
+    attribute gate { text }?,
+    attribute pin { text }
+  }
+
+# --- Иерархия --------------------------------------------------------
+
+# Ровно два ребёнка, оба поименованы: третьего места нет.
+module =
+  element module {
+    attribute name { text },
+    attribute prefix { text },
+    symbol-anon,
+    schematic-mod
+  }
+
+# Канал. Атрибуты — параметрический интерфейс, изнутри видны как DOCUMENT.
+# exclude здесь нет — по той же причине, что у детали.
+modinst =
+  element modinst {
+    attribute module { text },
+    attribute name { text },
+    attribute x { um }, attribute y { um },
+    attribute rot { rot-ortho }?,
+    attribute mirror { bool }?,
+    attribute offset { xsd:int }?,
+    attribute variant { text }?,
+    ( attr | txt-sch )*
+  }
+
+# --- Варианты сборки -------------------------------------------------
+#
+# Запись отличия — обрезанная деталь или канал, где написано только
+# изменённое. Базовый вариант не объявляется: он и есть схема.
+
+variant =
+  element variant {
+    attribute name { text },
+    ( part-diff | modinst-diff )*
+  }
+
+part-diff =
+  element part {
+    attribute name { text },
+    attribute exclude { bool }?,
+    attr*
+  }
+
+modinst-diff =
+  element modinst {
+    attribute name { text },
+    attribute variant { text }?,
+    attribute exclude { bool }?,
+    empty
+  }
+
+
+# =====================================================================
+#  4. ПЛАТА
+# =====================================================================
+
+# Плата — представление, не копия: ни компонентов, ни цепей, только
+# ссылки по имени. Отсутствие stack означает 35[1530]35.
+layout =
+  element layout {
+    attribute name { text },
+    attribute stack { stack-formula }?,
+    ( rules?
+    & layer*
+    & element-brd*
+    & signal*
+    & line-graphic*
+    & arc-graphic*
+    & shape-brd*
+    & polygon-free*
+    & txt-brd*
+    & note*
+    & hole*
+    & attr* )
+  }
+
+# Шесть чисел от фабрики. Все опциональны: отсутствие — «не задано»,
+# не ноль. Правил с областью действия нет и не будет.
+rules =
+  element rules {
+    attribute clearance { um-nonneg }?,
+    attribute edge_clearance { um-nonneg }?,
+    attribute min_width { um-pos }?,
+    attribute min_drill { um-pos }?,
+    attribute min_annular { um-pos }?,
+    attribute min_drill_web { um-pos }?
+  }
+
+# Размещённый компонент. Ни компонента, ни корпуса не хранит — всё это
+# уже сказано на схеме. Добавляет ровно три факта: где, как повёрнут,
+# с какой стороны. Поворот свободный: плата не ограничена шагом 90°.
+element-brd =
+  element \element {
+    attribute name { text },
+    attribute x { um }, attribute y { um },
+    attribute rot { rot-free }?,
+    attribute side { side-value }?,
+    txt-brd*
+  }
+
+# Медь одной цепи. Принадлежность даёт контейнер: ни дорожка, ни
+# полигон, ни переход имени цепи не пишут.
+signal =
+  element signal {
+    attribute name { text },
+    ( contactref | line-signal | arc-signal | via | polygon-signal )*
+  }
+
+# Переход сквозь весь стек — слоя и спана нет по построению.
+# diameter обязателен: авторазмеров в IR нет, импорт запекает вычисленный.
+# Маска не вскрывается никогда, и флага под это нет.
+via =
+  element via {
+    attribute x { um }, attribute y { um },
+    attribute drill { um-pos },
+    attribute diameter { um-pos }
+  }
+
+# Конец цепи. Цитата схемного <pinref>, а не объявление:
+# связность не выводится из геометрии касания.
+contactref =
+  element contactref {
+    attribute \element { text },
+    attribute pad { pad-name }
+  }

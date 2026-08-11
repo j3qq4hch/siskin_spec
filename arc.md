@@ -4,8 +4,8 @@
 
 | | |
 |---|---|
-| **Встречается в** | символ, корпус, плата, сигнал |
-| **Родители** | [`<symbol>`](symbol.md), [`<footprint>`](footprint.md), [`<layout>`](layout.md), [`<signal>`](signal.md) |
+| **Встречается в** | символ, корпус, схема, плата, сигнал |
+| **Родители** | [`<symbol>`](symbol.md), [`<footprint>`](footprint.md), [`<schematic>`](schematic.md), [`<layout>`](layout.md), [`<signal>`](signal.md) |
 | **Дети** | — |
 
 ## Атрибуты
