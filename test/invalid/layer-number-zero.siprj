@@ -1,0 +1,5 @@
+<!-- layer.md: number=0 запрещён - нулю некуда деть знак. -->
+<project name="a">
+  <layer number="0" name="zero"/>
+  <schematic/>
+</project>

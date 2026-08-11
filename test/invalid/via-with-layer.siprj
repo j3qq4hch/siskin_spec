@@ -1,0 +1,4 @@
+<!-- via.md: переход сквозной по построению, слоя и спана у него нет. -->
+<project name="b"><schematic/><layout name="main">
+  <signal name="N"><via x="0" y="0" drill="300" diameter="600" layer="1"/></signal>
+</layout></project>

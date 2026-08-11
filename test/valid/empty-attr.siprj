@@ -1,0 +1,6 @@
+<!-- Пустое value - объявление ключа, а не отсутствие. Читалка не вправе его выбросить. -->
+<project name="attrs">
+  <schematic>
+    <attr name="REVISION" value=""/>
+  </schematic>
+</project>

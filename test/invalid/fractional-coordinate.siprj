@@ -1,0 +1,4 @@
+<!-- units.md: координаты - целые микрометры, дробей не бывает. -->
+<project name="a"><schematic>
+  <compinst part="R1" gate="G$1" x="25400.5" y="0"/>
+</schematic></project>

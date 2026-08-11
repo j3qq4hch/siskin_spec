@@ -1,0 +1,4 @@
+<!-- project.md: схема ровно одна, и она обязательна. -->
+<project name="a">
+  <layout name="main"/>
+</project>

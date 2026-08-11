@@ -1,0 +1,5 @@
+<!-- project.md: схема РОВНО одна. -->
+<project name="a">
+  <schematic/>
+  <schematic/>
+</project>

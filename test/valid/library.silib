@@ -1,0 +1,16 @@
+<!-- Библиотека: символ, корпус, компонент с устройством и маппингом. -->
+<library name="local">
+  <symbol name="R">
+    <pin name="1" direction="pas" x="0" y="0" rot="0"/>
+  </symbol>
+  <footprint name="0805">
+    <smd name="1" x="-1000" y="0" width="1200" height="1400" layer="1"/>
+    <smd name="2" x="1000" y="0" width="1200" height="1400" layer="1"/>
+  </footprint>
+  <component name="R-EU" prefix="R">
+    <gate name="G$1" symbol="R" x="0" y="0"/>
+    <device name="0805" footprint="0805">
+      <map gate="G$1" pin="1" pad="1"/>
+    </device>
+  </component>
+</library>

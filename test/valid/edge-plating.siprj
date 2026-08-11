@@ -1,0 +1,9 @@
+<!-- Слой 146: единственный не-стековый внутри signal, width обязан быть 0. -->
+<project name="brd">
+  <schematic/>
+  <layout name="main">
+    <signal name="GND">
+      <line x1="0" y1="0" x2="10000" y2="0" layer="146" width="0"/>
+    </signal>
+  </layout>
+</project>

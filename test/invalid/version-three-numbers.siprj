@@ -1,0 +1,4 @@
+<!-- version.md: третьего числа нет - patch поведения читателя не меняет. -->
+<project name="board" version="1.0.0">
+  <schematic/>
+</project>

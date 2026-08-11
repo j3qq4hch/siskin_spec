@@ -1,0 +1,5 @@
+<!-- Формула стека: чередование, начало и конец медью. -->
+<project name="brd">
+  <schematic/>
+  <layout name="main" stack="35[1530]35"/>
+</project>

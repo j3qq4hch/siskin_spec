@@ -1,0 +1,8 @@
+<!-- module.md: иерархия ровно один уровень, канал внутри модуля невозможен. -->
+<project name="a">
+  <module name="M" prefix="MOD">
+    <symbol/>
+    <schematic><modinst module="M" name="MOD1" x="0" y="0"/></schematic>
+  </module>
+  <schematic/>
+</project>

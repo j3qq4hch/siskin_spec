@@ -1,0 +1,4 @@
+<!-- attr.md: type - закрытый список из четырёх значений. -->
+<project name="a"><schematic>
+  <attr name="X" value="1" type="foo"/>
+</schematic></project>

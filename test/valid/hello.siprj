@@ -1,0 +1,15 @@
+<!-- Минимальный проект: пул символов, компонент, гейт, деталь, размещение. -->
+<project name="hello">
+  <symbol name="R">
+    <shape x="0" y="0" w="5080" h="1780" outline="152" layer="94"/>
+    <pin name="1" direction="pas" x="-5080" y="0" rot="0"/>
+    <pin name="2" direction="pas" x="5080" y="0" rot="180000"/>
+  </symbol>
+  <component library="local" name="R-EU" prefix="R">
+    <gate name="G$1" symbol="R" x="0" y="0"/>
+  </component>
+  <schematic>
+    <part name="R1" library="local" component="R-EU"/>
+    <compinst part="R1" gate="G$1" x="25400" y="25400"/>
+  </schematic>
+</project>

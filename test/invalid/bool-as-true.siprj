@@ -1,0 +1,4 @@
+<!-- Булево - только 0 и 1. Ни true/false, ни yes/no. -->
+<project name="a"><schematic>
+  <compinst part="R1" gate="G$1" x="0" y="0" mirror="true"/>
+</schematic></project>

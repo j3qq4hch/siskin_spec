@@ -31,12 +31,20 @@
 #  «в коде не сделано». Файл, прошедший эту схему, не обязан читаться
 #  сегодняшним Babel, и наоборот.
 #
-#  НЕ ПРОВЕРЕНА ВАЛИДАТОРОМ. Синтаксис вычитан глазами, jing не
-#  запускался ни разу. Первое, что стоит сделать перед использованием.
+#  ПРОВЕРЕНА. jing 20241231 принимает схему без замечаний; trang даёт
+#  из неё .rng, и libxml2 по этому .rng выносит те же вердикты — то есть
+#  схема не опирается на особенности одного парсера.
+#
+#  Корпус лежит в test/: восемь валидных документов и шестнадцать
+#  заведомо неверных, каждый на одно правило. Все ведут себя как описано
+#  на страницах. Правя схему, гоняйте test/run.sh — он же эталон
+#  поведения для читалки.
 #
 #  СБОРКА
-#    trang siskin-ir.rnc siskin-ir.rng     # XML-форма для libxml2 и codegen
-#    jing siskin-ir.rnc board.siprj       # проверить файл
+#    trang siskin-ir.rnc siskin-ir.rng      # XML-форма для libxml2 и codegen
+#    jing -c siskin-ir.rnc board.siprj      # проверить файл; -c обязателен,
+#                                           # без него jing ждёт XML-запись
+#    test/run.sh                            # прогнать весь корпус
 # =====================================================================
 
 datatypes xsd = "http://www.w3.org/2001/XMLSchema-datatypes"
@@ -69,6 +77,9 @@ percent = xsd:integer { minInclusive = "0" maxInclusive = "100" }
 
 # Булево — только 0 и 1. Ни yes/no, ни true/false, ни «ненулевое».
 bool = "0" | "1"
+
+# Версия формата: два целых через точку. Третьего числа нет — version.md.
+fmt-version = xsd:token { pattern = "(0|[1-9][0-9]*)[.](0|[1-9][0-9]*)" }
 
 # Номер слоя в объявлении <layer>: знаковое целое, не 0.
 layer-num =
@@ -150,8 +161,8 @@ line-wire =
 line-signal =
   element line {
     seg-coords,
-    ( attribute layer { layer-copper },  attribute width { um-pos }
-    | attribute layer { layer-plating }, attribute width { "0" } )
+    ( ( attribute layer { layer-copper },  attribute width { um-pos } )
+    | ( attribute layer { layer-plating }, attribute width { "0" } ) )
   }
 
 arc-graphic =
@@ -166,8 +177,8 @@ arc-signal =
   element arc {
     seg-coords,
     attribute curve { curve },
-    ( attribute layer { layer-copper },  attribute width { um-pos }
-    | attribute layer { layer-plating }, attribute width { "0" } )
+    ( ( attribute layer { layer-copper },  attribute width { um-pos } )
+    | ( attribute layer { layer-plating }, attribute width { "0" } ) )
   }
 
 # Прямоугольник, овал и круг — одна форма со шкалой скругления.
@@ -263,9 +274,14 @@ note =
 #  2. КОМПОНЕНТ — содержимое .silib
 # =====================================================================
 
+# version необязателен в схеме, но пишется всегда: отсутствие законно и
+# означает 1.0 — так выглядят файлы, созданные до правила. Требовать его
+# грамматикой значило бы объявить невалидным весь существующий корпус.
+# Правило чтения — не дело валидатора, оно в version.md.
 library =
   element library {
     attribute name { text },
+    attribute version { fmt-version }?,
     ( symbol-pooled* & footprint* & component-lib* )
   }
 
@@ -394,6 +410,7 @@ model3d =
 project =
   element project {
     attribute name { text },
+    attribute version { fmt-version }?,   # см. комментарий у library
     ( symbol-pooled*
     & footprint*
     & component-prj*

@@ -1,0 +1,4 @@
+<!-- version.md: версия формата у корня проекта, два целых через точку. -->
+<project name="board" version="1.0">
+  <schematic/>
+</project>

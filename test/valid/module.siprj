@@ -1,0 +1,12 @@
+<!-- Иерархия: определение модуля (символ + схема) и канал на холсте изделия. -->
+<project name="hier">
+  <module name="DCDC" prefix="DCDC">
+    <symbol>
+      <pin name="VIN" direction="pwr" x="0" y="0" rot="0"/>
+    </symbol>
+    <schematic/>
+  </module>
+  <schematic>
+    <modinst module="DCDC" name="DCDC1" x="0" y="0"/>
+  </schematic>
+</project>

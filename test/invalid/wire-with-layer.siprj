@@ -1,0 +1,6 @@
+<!-- segment.md: у провода схемы layer не пишется - принадлежность даёт segment. -->
+<project name="a"><schematic>
+  <net name="N"><segment>
+    <line x1="0" y1="0" x2="10000" y2="0" width="152" layer="91"/>
+  </segment></net>
+</schematic></project>

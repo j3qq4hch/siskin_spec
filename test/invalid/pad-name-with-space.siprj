@@ -1,0 +1,4 @@
+<!-- pad.md: пробел разделяет имена в map pad="12 EP", потому в имени пада запрещён. -->
+<library name="l"><footprint name="f">
+  <smd name="1 2" x="0" y="0" width="1000" height="1000" layer="1"/>
+</footprint></library>

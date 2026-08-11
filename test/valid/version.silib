@@ -1,0 +1,6 @@
+<!-- version.md: та же версия у второго корня; числа многозначные. -->
+<library name="rt" version="10.3">
+  <symbol name="R">
+    <pin name="1" direction="pas" x="0" y="0" rot="0"/>
+  </symbol>
+</library>

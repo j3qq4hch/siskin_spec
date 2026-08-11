@@ -1,0 +1,4 @@
+<!-- units.md: в схемном пространстве поворот кратен 90 градусам. -->
+<project name="a"><schematic>
+  <compinst part="R1" gate="G$1" x="0" y="0" rot="45000"/>
+</schematic></project>
