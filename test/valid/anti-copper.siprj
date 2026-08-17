@@ -1,0 +1,15 @@
+<!-- Анти-медь живёт прямым ребёнком <layout>: вычитание — не медь цепи. -->
+<project name="brd">
+  <schematic/>
+  <layout name="main">
+    <signal name="GND">
+      <polygon layer="1" width="200">
+        <vertex x="0" y="0"/><vertex x="20000" y="0"/><vertex x="20000" y="20000"/>
+      </polygon>
+    </signal>
+    <line layer="!1" width="500" x1="2000" y1="2000" x2="8000" y2="2000"/>
+    <polygon layer="!1" width="0">
+      <vertex x="5000" y="5000"/><vertex x="9000" y="5000"/><vertex x="5000" y="9000"/>
+    </polygon>
+  </layout>
+</project>

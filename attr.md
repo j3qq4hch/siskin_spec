@@ -8,8 +8,8 @@
 
 | | |
 |---|---|
-| **Встречается в** | компонент, устройство, **деталь**, канал, **цепь**, класс, схема — и холст изделия, и [схема модуля](module.md), — плата |
-| **Родители** | [`<component>`](component.md), [`<device>`](device.md), [`<part>`](part.md), [`<modinst>`](module-instance.md), [`<net>`](net.md), [`<class>`](class.md), [`<schematic>`](schematic.md), [`<layout>`](layout.md) |
+| **Встречается в** | компонент, устройство, **деталь**, канал, **цепь**, класс, схема — и холст изделия, и [схема модуля](module.md), — плата, **библиотека** |
+| **Родители** | [`<component>`](component.md), [`<device>`](device.md), [`<part>`](part.md), [`<modinst>`](module-instance.md), [`<net>`](net.md), [`<class>`](class.md), [`<schematic>`](schematic.md), [`<layout>`](layout.md), [`<library>`](library.md) |
 | **Дети** | — |
 
 **Обёртки нет.** `<attr>` — прямой ребёнок носителя. Раньше в

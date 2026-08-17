@@ -1,9 +1,11 @@
-<!-- Слой 146: единственный не-стековый внутри signal, width обязан быть 0. -->
+<!-- Металлизация торца: слоя нет, путь без width, полоска меди задана land. -->
 <project name="brd">
   <schematic/>
   <layout name="main">
     <signal name="GND">
-      <line x1="0" y1="0" x2="10000" y2="0" layer="146" width="0"/>
+      <plating land="200" inner_land="0">
+        <line x1="0" y1="0" x2="10000" y2="0"/>
+      </plating>
     </signal>
   </layout>
 </project>

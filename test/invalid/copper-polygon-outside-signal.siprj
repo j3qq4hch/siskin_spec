@@ -1,0 +1,6 @@
+<!-- Полигон меди вне <signal>; анти-медь там законна, позитивная — нет. -->
+<project name="b"><schematic/><layout name="main">
+  <polygon layer="1" width="200">
+    <vertex x="0" y="0"/><vertex x="10000" y="0"/><vertex x="0" y="10000"/>
+  </polygon>
+</layout></project>

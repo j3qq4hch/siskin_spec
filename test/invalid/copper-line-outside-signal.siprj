@@ -1,0 +1,4 @@
+<!-- Медь цепи лежит только внутри <signal>. Разметка (shape, text) — не в счёт. -->
+<project name="b"><schematic/><layout name="main">
+  <line x1="0" y1="0" x2="10000" y2="0" layer="1" width="200"/>
+</layout></project>

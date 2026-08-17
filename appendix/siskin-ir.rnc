@@ -35,7 +35,7 @@
 #  из неё .rng, и libxml2 по этому .rng выносит те же вердикты — то есть
 #  схема не опирается на особенности одного парсера.
 #
-#  Корпус лежит в test/: восемь валидных документов и шестнадцать
+#  Корпус лежит в test/: девять валидных документов и восемнадцать
 #  заведомо неверных, каждый на одно правило. Все ведут себя как описано
 #  на страницах. Правя схему, гоняйте test/run.sh — он же эталон
 #  поведения для читалки.
@@ -92,8 +92,19 @@ layer-ref = xsd:token { pattern = "!?-?[1-9][0-9]*" }
 # Медь стека: |n| < 100. Ровно тот тест, что is_copper.
 layer-copper = xsd:token { pattern = "-?[1-9][0-9]?" }
 
-# Металлизация торца — единственный не-стековый слой внутри <signal>.
-layer-plating = "146"
+# Не-медь: |n| >= 100. Медь ЦЕПИ живёт только внутри <signal>, поэтому
+# дорожка, дуга и полигон прямыми детьми <layout> ссылаются на этот домен.
+# <shape> и <text> сюда не попадают: на меди они законны и лежат прямо на
+# плате — это разметка, а не проводник, цепи у неё нет и быть не может.
+# 146 сюда тоже не попадает: он канал отображения, геометрия на него не ссылается.
+layer-noncopper = xsd:token { pattern = "!?-?[1-9][0-9]{2,}" }
+
+# Анти-медь: !N при |N| < 100. Вычитание — не медь цепи, в <signal> ему
+# места нет; живёт прямым ребёнком <layout>, как и прочая не-медь.
+layer-anticopper = xsd:token { pattern = "!-?[1-9][0-9]?" }
+
+# Что вправе назвать прямой ребёнок <layout>: не-медь и анти-медь.
+layer-brd = layer-noncopper | layer-anticopper
 
 # Имя пада: без пробелов — пробел разделяет имена в <map pad="12 EP">.
 pad-name = xsd:token { pattern = "[^ ]+" }
@@ -132,7 +143,7 @@ stack-formula =
 #  1. ПРИМИТИВЫ ГРАФИКИ
 #
 #  Роль отрезка решает контейнер, не атрибут. Отсюда три варианта
-#  <line>: провод (слоя нет вовсе), дорожка (слой медный либо 146)
+#  <line>: провод (слоя нет вовсе), дорожка (слой медный)
 #  и графика (слой любой). У <shape> и <text> варианта два — по тому,
 #  ортогонально пространство или нет.
 # =====================================================================
@@ -155,15 +166,27 @@ line-wire =
     attribute width { um-nonneg }
   }
 
-# Медь цепи. Либо дорожка на меди с ненулевой толщиной, либо след
-# металлизированного торца на 146, у которого width физического смысла
-# не имеет и пишется 0.
+# Медь цепи: дорожка на медном слое с ненулевой толщиной.
 line-signal =
   element line {
     seg-coords,
-    ( ( attribute layer { layer-copper },  attribute width { um-pos } )
-    | ( attribute layer { layer-plating }, attribute width { "0" } ) )
+    attribute layer { layer-copper },
+    attribute width { um-pos }
   }
+
+# Графика прямого ребёнка <layout>: не-медь и анти-медь. Медь платы лежит
+# внутри <signal> — принадлежность даёт контейнер, а вычитание медью не
+# является и потому в сигнал не попадает.
+line-brd =
+  element line {
+    seg-coords,
+    attribute width { um-nonneg },
+    attribute layer { layer-brd }
+  }
+
+# Путь металлизации: ни слоя, ни толщины. Слоя нет — торец идёт поперёк
+# всего стека; толщину задаёт сам рез на 120.
+line-plating = element line { seg-coords }
 
 arc-graphic =
   element arc {
@@ -177,9 +200,19 @@ arc-signal =
   element arc {
     seg-coords,
     attribute curve { curve },
-    ( ( attribute layer { layer-copper },  attribute width { um-pos } )
-    | ( attribute layer { layer-plating }, attribute width { "0" } ) )
+    attribute layer { layer-copper },
+    attribute width { um-pos }
   }
+
+arc-brd =
+  element arc {
+    seg-coords,
+    attribute curve { curve },
+    attribute width { um-nonneg },
+    attribute layer { layer-brd }
+  }
+
+arc-plating = element arc { seg-coords, attribute curve { curve } }
 
 # Прямоугольник, овал и круг — одна форма со шкалой скругления.
 # outline="0" (умолчание) — залита, иначе только контур этой толщины.
@@ -216,6 +249,15 @@ polygon-free =
   element polygon {
     attribute width { um-nonneg },
     polygon-attrs
+  }
+
+# Прямой ребёнок <layout>: не-медь и анти-медь, как у line-brd.
+polygon-brd =
+  element polygon {
+    attribute width { um-nonneg },
+    attribute layer { layer-brd },
+    attribute fill { percent }?,
+    vertex, vertex, vertex, vertex*
   }
 
 # curve описывает ребро, ВЫХОДЯЩЕЕ из этой вершины; отсутствие — прямое.
@@ -278,11 +320,13 @@ note =
 # означает 1.0 — так выглядят файлы, созданные до правила. Требовать его
 # грамматикой значило бы объявить невалидным весь существующий корпус.
 # Правило чтения — не дело валидатора, оно в version.md.
+# Три пула плюс метаданные самого файла: описание, автор, источник.
+# В проект они не переезжают — элемента <library> там не существует.
 library =
   element library {
     attribute name { text },
     attribute version { fmt-version }?,
-    ( symbol-pooled* & footprint* & component-lib* )
+    ( symbol-pooled* & footprint* & component-lib* & attr* )
   }
 
 # Символ живёт в пуле и адресуется гейтом по имени.
@@ -350,11 +394,14 @@ footprint =
   element footprint {
     attribute name { text },
     ( line-graphic | arc-graphic | shape-brd | polygon-free | txt-brd
-    | pad | smd | hole | model3d )*
+    | pad | smd | hole | plating | model3d )*
   }
 
 # Сквозной пад. Слоя нет — пронизывает все медные слои по построению.
 # Пасты нет — его паяют волной, апертуре взяться неоткуда.
+# inner_dia опционален: не задан — кольцо как снаружи. Ноль законен:
+# кольца на внутренних нет вовсе, IPC это допускает.
+# Пад, чей центр лежит на резе 120, — кастеллация; схемой это не выражается.
 pad =
   element pad {
     attribute name { pad-name },
@@ -363,6 +410,7 @@ pad =
     attribute rot { rot-free }?,
     attribute roundness { percent }?,
     attribute drill { um-pos },
+    attribute inner_dia { um-nonneg }?,
     attribute thermals { percent }?,
     attribute stopmask { bool }?
   }
@@ -594,10 +642,10 @@ layout =
     & layer*
     & element-brd*
     & signal*
-    & line-graphic*
-    & arc-graphic*
+    & line-brd*
+    & arc-brd*
     & shape-brd*
-    & polygon-free*
+    & polygon-brd*
     & txt-brd*
     & note*
     & hole*
@@ -633,17 +681,31 @@ element-brd =
 signal =
   element signal {
     attribute name { text },
-    ( contactref | line-signal | arc-signal | via | polygon-signal )*
+    ( contactref | line-signal | arc-signal | via | polygon-signal
+    | plating )*
   }
 
 # Переход сквозь весь стек — слоя и спана нет по построению.
 # diameter обязателен: авторазмеров в IR нет, импорт запекает вычисленный.
+# inner_dia опционален: не задан — кольцо одинаково по всему стеку.
+# Ноль законен: кольца на внутренних нет вовсе, IPC это допускает.
 # Маска не вскрывается никогда, и флага под это нет.
 via =
   element via {
     attribute x { um }, attribute y { um },
     attribute drill { um-pos },
-    attribute diameter { um-pos }
+    attribute diameter { um-pos },
+    attribute inner_dia { um-nonneg }?
+  }
+
+# Металлизация торца: проводник поперёк всего стека, слоя нет.
+# land/inner_land — ширина полоски меди от кромки реза наружу;
+# ноль означает отсутствие полоски и законен.
+plating =
+  element plating {
+    attribute land { um-nonneg }?,
+    attribute inner_land { um-nonneg }?,
+    ( line-plating | arc-plating )+
   }
 
 # Конец цепи. Цитата схемного <pinref>, а не объявление:

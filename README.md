@@ -34,7 +34,7 @@
 | [Плейсхолдеры](placeholders.md) | Режим по первому символу: `>` подставить, `=` вычислить |
 | [Рамка листа](frame.md) | Страница на холсте схемы — символ с `<shape>` на слое `98` |
 | [Символ питания](power-symbol.md) | Ярлык с именем шины — символ с выводом `sup` |
-| [Кастомный пад](custom-pad.md) | Площадка произвольной формы — медь, отверстие и SMD-носитель имени |
+| [Кастомный пад](custom-pad.md) | Площадка произвольной формы — обычный пад плюс медь вокруг него |
 
 ### Примитивы графики
 
@@ -131,6 +131,7 @@
 | [`<signal>`](signal.md) | Медь одной цепи |
 | ↗ [`<line>`](line.md) [`<arc>`](arc.md) | Дорожки |
 | [`<via>`](via.md) | Переходное отверстие |
+| [`<plating>`](plating.md) | Металлизация торца — проводник поперёк стека |
 | ↗ [`<polygon>`](polygon.md) | Полигон меди — заливка, thermals, ранг |
 | [`<contactref>`](contactref.md) | Привязка сигнала к паду элемента |
 | ↗ [`<line>`](line.md) [`<arc>`](arc.md) [`<text>`](text.md) [`<hole>`](hole.md) | Контур платы, документация, крепёж |
@@ -146,10 +147,11 @@
 
 | Страница | О чём |
 |---|---|
-| [ERC](appendix/erc.md) | Что модель делает проверяемым — и чего проверить не может |
+| [ERC](appendix/erc.md) | Осмысленна ли схема: направления, питание, имена, адреса |
+| [DRC](appendix/drc.md) | Изготовима ли плата: контур, медь, зазоры, размещение |
 | [Обязательства редактора](appendix/editor.md) | Что модель уже решила за интерфейс: имена, умолчания, вопросы, отказы |
 | [Грамматика](appendix/siskin-ir.rnc) | Формальная схема RELAX NG — структура, домены, контекстные варианты |
-| [Тестовый корпус](test/README.md) | Документы под грамматику: восемь валидных, шестнадцать заведомо неверных |
+| [Тестовый корпус](test/README.md) | Документы под грамматику: девять валидных, восемнадцать заведомо неверных |
 
 ### Импорт и экспорт
 
@@ -216,13 +218,15 @@
 [Конвертация: Eagle](appendix/conversion-eagle.md) ·
 [Конвертация: KiCad](appendix/conversion-kicad.md) ·
 [Конвертация: Altium](appendix/conversion-altium.md) ·
-[`<device>`](device.md) · [`<element>`](element.md) · [ERC](appendix/erc.md) ·
+[`<device>`](device.md) · [DRC](appendix/drc.md) ·
+[`<element>`](element.md) · [ERC](appendix/erc.md) ·
 [`<footprint>`](footprint.md) · [`<gate>`](gate.md) ·
 [`<compinst>`](component-instance.md) · [`<hole>`](hole.md) ·
 [`<label>`](label.md) · [`<layer>`](layer.md) ·
 [Модель слоёв](layer-model.md) · [`<layout>`](layout.md) ·
 [`<library>`](library.md) · [`<line>`](line.md) · [`<map>`](map.md) ·
 [`<model3d>`](model3d.md) · [`<modinst>`](module-instance.md) ·
+[`<plating>`](plating.md) ·
 [`<module>`](module.md) · [Имена](naming.md) ·
 [`<net>`](net.md) · [`<note>`](note.md) · [`<pad>`](pad.md) ·
 [`<part>`](part.md) · [`<pin>`](pin.md) ·

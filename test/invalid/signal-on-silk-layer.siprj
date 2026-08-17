@@ -1,4 +1,4 @@
-<!-- signal.md: медь цепи живёт на меди либо на 146, шёлкография исключена. -->
+<!-- signal.md: медь цепи живёт только на медных слоях, шёлкография исключена. -->
 <project name="b"><schematic/><layout name="main">
   <signal name="N"><line x1="0" y1="0" x2="10000" y2="0" layer="121" width="200"/></signal>
 </layout></project>
