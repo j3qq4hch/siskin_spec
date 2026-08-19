@@ -27,7 +27,7 @@
 #  Всё это — код валидатора. Схема отсекает мусор до него, а не вместо.
 #
 #  СТАТУС. Схема написана по спецификации, то есть по ЦЕЛЕВОМУ формату.
-#  Код Babel местами живёт по-старому — см. reasoning.md, 49 записей
+#  Код Babel местами живёт по-старому — см. reasoning.md, записи
 #  «в коде не сделано». Файл, прошедший эту схему, не обязан читаться
 #  сегодняшним Babel, и наоборот.
 #
@@ -35,9 +35,9 @@
 #  из неё .rng, и libxml2 по этому .rng выносит те же вердикты — то есть
 #  схема не опирается на особенности одного парсера.
 #
-#  Корпус лежит в test/: девять валидных документов и восемнадцать
-#  заведомо неверных, каждый на одно правило. Все ведут себя как описано
-#  на страницах. Правя схему, гоняйте test/run.sh — он же эталон
+#  Корпус лежит в test/: валидные документы и заведомо неверные, каждый
+#  на одно правило. Все ведут себя как описано на страницах. Правя схему,
+#  гоняйте test/run.sh — он печатает счёт сам и служит эталоном
 #  поведения для читалки.
 #
 #  СБОРКА
@@ -106,6 +106,17 @@ layer-anticopper = xsd:token { pattern = "!-?[1-9][0-9]?" }
 # Что вправе назвать прямой ребёнок <layout>: не-медь и анти-медь.
 layer-brd = layer-noncopper | layer-anticopper
 
+# Имя адресуемого объекта — детали, канала, цепи. Без пробелов и без @:
+# левую половину ссылки >VDD@value терминирует именно @, а пробел разорвал бы
+# её посреди свободного текста. Прочие символы законны: +5V, N$1, USB_D+.
+obj-name = xsd:token { pattern = "[^\s@]+" }
+
+# Имя атрибута: буквы, цифры, _ - #, точка только как разделитель
+# пространства. Ссылка >R1@BOM.MANF# вынимается из свободного текста, значит
+# домен обязан говорить, где она кончается — тот же довод, что у имени пада.
+attr-name =
+  xsd:token { pattern = "[\p{L}\p{N}_#\-]+(\.[\p{L}\p{N}_#\-]+)*" }
+
 # Имя пада: без пробелов — пробел разделяет имена в <map pad="12 EP">.
 pad-name = xsd:token { pattern = "[^ ]+" }
 pad-list = xsd:token { pattern = "[^ ]+( [^ ]+)*" }
@@ -121,9 +132,6 @@ direction-value = "in" | "out" | "io" | "pas" | "pwr" | "sup" | "oc" | "hiz"
 
 # Стиль метки — подмножество direction плюс crummy.
 label-style = "crummy" | "in" | "out" | "io" | "pwr" | "pas"
-
-# Предназначение атрибута. Ось для редактора: импорт даёт только general.
-attr-type = "bom" | "sim" | "general" | "service"
 
 side-value = "top" | "bottom"
 
@@ -283,11 +291,12 @@ txt-brd = element \text { txt-attrs, attribute rot { rot-free  }?, text }
 
 # Пользовательский атрибут. Обёртки <attributes> нет.
 # Пустое value — объявление ключа, а не отсутствие: не выбрасывать.
+# Поля type нет: предназначение выражает префикс имени (BOM.MANF#), и точка для
+# грамматики — обычный символ. Имя регистронезависимо — attr.md, naming.md.
 attr =
   element attr {
-    attribute name { text },
-    attribute value { text },
-    attribute type { attr-type }?
+    attribute name { attr-name },
+    attribute value { text }
   }
 
 # Объявление слоя. number=0 запрещён — нулю некуда деть знак.
@@ -300,16 +309,19 @@ layer =
   }
 
 # Markdown-блок. h — минимум, а не потолок. Содержимое — текст элемента.
-note =
-  element note {
-    attribute x { um }, attribute y { um },
-    attribute w { um-pos }, attribute h { um-nonneg },
-    attribute rot { rot-ortho }?,
-    attribute size { um-pos },
-    attribute ratio { percent }?,
-    attribute layer { layer-ref },
-    text
-  }
+# mirror — как у <text>: таблица на нижней шёлкографии печатается зеркальной.
+# Вариантов два по тому же признаку, что у <text> и <shape>: ортогонально
+# пространство или нет.
+note-attrs =
+  attribute x { um }, attribute y { um },
+  attribute w { um-pos }, attribute h { um-nonneg },
+  attribute size { um-pos },
+  attribute ratio { percent }?,
+  attribute mirror { bool }?,
+  attribute layer { layer-ref }
+
+note-sch = element note { note-attrs, attribute rot { rot-ortho }?, text }
+note-brd = element note { note-attrs, attribute rot { rot-free  }?, text }
 
 
 # =====================================================================
@@ -511,7 +523,7 @@ class =
 # Окна в буквах и логотипах даёт анти-слой — layer-ref допускает `!`.
 schematic-item = part | compinst | net | variant | attr
                | line-graphic | arc-graphic | shape-sch | polygon-free
-               | txt-sch | note
+               | txt-sch | note-sch
 
 schematic-doc = element schematic { ( schematic-item | modinst )* }
 schematic-mod = element schematic { schematic-item* }
@@ -521,7 +533,7 @@ schematic-mod = element schematic { schematic-item* }
 # device не пишется у компонента без устройств — рамки, символа питания.
 part =
   element part {
-    attribute name { text },
+    attribute name { obj-name },
     attribute library { text },
     attribute component { text },
     attribute device { text }?,
@@ -532,7 +544,7 @@ part =
 # Дети-<text> — исчерпывающий список плейсхолдеров; смэша как флага нет.
 compinst =
   element compinst {
-    attribute part { text },
+    attribute part { obj-name },
     attribute gate { text },
     attribute x { um }, attribute y { um },
     attribute rot { rot-ortho }?,
@@ -543,7 +555,7 @@ compinst =
 # Цепь. Всё, кроме имени, — обычные <attr>: class, value, max_current.
 net =
   element net {
-    attribute name { text },
+    attribute name { obj-name },
     ( attr | segment )*
   }
 
@@ -563,7 +575,7 @@ label =
     attribute rot { rot-ortho }?,
     attribute align { align-value },
     attribute layer { layer-ref },
-    attribute style { label-style }?
+    attribute style { label-style }
   }
 
 # Один тег на оба случая: цепи безразлично, деталь внутри или модуль.
@@ -571,7 +583,7 @@ label =
 # не различает (нужен резолв inst), поэтому атрибут опционален.
 pinref =
   element pinref {
-    attribute inst { text },
+    attribute inst { obj-name },
     attribute gate { text }?,
     attribute pin { text }
   }
@@ -592,7 +604,7 @@ module =
 modinst =
   element modinst {
     attribute module { text },
-    attribute name { text },
+    attribute name { obj-name },
     attribute x { um }, attribute y { um },
     attribute rot { rot-ortho }?,
     attribute mirror { bool }?,
@@ -614,14 +626,14 @@ variant =
 
 part-diff =
   element part {
-    attribute name { text },
+    attribute name { obj-name },
     attribute exclude { bool }?,
     attr*
   }
 
 modinst-diff =
   element modinst {
-    attribute name { text },
+    attribute name { obj-name },
     attribute variant { text }?,
     attribute exclude { bool }?,
     empty
@@ -638,6 +650,8 @@ layout =
   element layout {
     attribute name { text },
     attribute stack { stack-formula }?,
+    attribute mask_expansion { um }?,     # знаковые: минус — окно уже меди
+    attribute paste_expansion { um }?,
     ( rules?
     & layer*
     & element-brd*
@@ -647,7 +661,7 @@ layout =
     & shape-brd*
     & polygon-brd*
     & txt-brd*
-    & note*
+    & note-brd*
     & hole*
     & attr* )
   }
@@ -669,7 +683,7 @@ rules =
 # с какой стороны. Поворот свободный: плата не ограничена шагом 90°.
 element-brd =
   element \element {
-    attribute name { text },
+    attribute name { obj-name },
     attribute x { um }, attribute y { um },
     attribute rot { rot-free }?,
     attribute side { side-value }?,
@@ -680,7 +694,7 @@ element-brd =
 # полигон, ни переход имени цепи не пишут.
 signal =
   element signal {
-    attribute name { text },
+    attribute name { obj-name },
     ( contactref | line-signal | arc-signal | via | polygon-signal
     | plating )*
   }
@@ -690,12 +704,15 @@ signal =
 # inner_dia опционален: не задан — кольцо одинаково по всему стеку.
 # Ноль законен: кольца на внутренних нет вовсе, IPC это допускает.
 # Маска не вскрывается никогда, и флага под это нет.
+# <attr> — пометки инструментов и скриптов (STITCHING). Ни имени, ни свойств
+# они переходу не дают; ключ, меняющий прочтение меди, сюда не кладётся.
 via =
   element via {
     attribute x { um }, attribute y { um },
     attribute drill { um-pos },
     attribute diameter { um-pos },
-    attribute inner_dia { um-nonneg }?
+    attribute inner_dia { um-nonneg }?,
+    attr*
   }
 
 # Металлизация торца: проводник поперёк всего стека, слоя нет.
@@ -712,6 +729,6 @@ plating =
 # связность не выводится из геометрии касания.
 contactref =
   element contactref {
-    attribute \element { text },
+    attribute \element { obj-name },
     attribute pad { pad-name }
   }

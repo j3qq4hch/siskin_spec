@@ -1,0 +1,6 @@
+<!-- attr.md: точка в имени - обычный символ; пространство BOM. грамматике неизвестно. -->
+<project name="attrs">
+  <schematic>
+    <attr name="BOM.MANF#" value="RC0603FR-0710KL"/>
+  </schematic>
+</project>

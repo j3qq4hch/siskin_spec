@@ -38,7 +38,7 @@
 
 ```xml
 <part name="CON1" library="Connectors" component="1734037-4" device="-XH">
-  <attr name="manf#" value="1734037-4" />
+  <attr name="BOM.MANF#" value="1734037-4" />
 </part>
 <compinst part="CON1" gate="A" x="0"     y="0" />
 <compinst part="CON1" gate="B" x="33020" y="0" />
@@ -49,7 +49,7 @@
 
 **Имя — адрес, и потому объект под ним обязан быть один.** Пока деталь несли N
 записей, у адреса `CON1` не было единственного носителя: `<attr>` мог лежать на
-любой из них, `device` — разойтись между ними, а `>CON1@manf#` и
+любой из них, `device` — разойтись между ними, а `>CON1@BOM.MANF#` и
 [`<element name="CON1">`](element.md) не знали, какую читать. Разъехаться теперь
 нечему — второй копии не существует.
 

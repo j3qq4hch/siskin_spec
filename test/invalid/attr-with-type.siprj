@@ -1,0 +1,4 @@
+<!-- attr.md: поля type у атрибута нет - предназначение выражает префикс имени. -->
+<project name="a"><schematic>
+  <attr name="X" value="1" type="bom"/>
+</schematic></project>
