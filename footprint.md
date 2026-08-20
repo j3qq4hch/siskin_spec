@@ -11,7 +11,7 @@
 |---|---|
 | **Встречается в** | библиотека, проект |
 | **Родители** | [`<library>`](library.md), [`<project>`](project.md) |
-| **Дети** | [`<line>`](line.md), [`<arc>`](arc.md), [`<shape>`](shape.md), [`<polygon>`](polygon.md), [`<text>`](text.md), [`<pad>`](pad.md), [`<smd>`](smd.md), [`<hole>`](hole.md), [`<model3d>`](model3d.md) |
+| **Дети** | [`<line>`](line.md), [`<arc>`](arc.md), [`<shape>`](shape.md), [`<polygon>`](polygon.md), [`<text>`](text.md), [`<pad>`](pad.md), [`<smd>`](smd.md), [`<hole>`](hole.md), [`<plating>`](plating.md), [`<model3d>`](model3d.md) |
 
 ## Атрибуты
 
@@ -97,6 +97,8 @@
 - **Медь корпуса цепи не объявляет** — она получает её [от падов, лежащих
   внутри](polygon.md). Площадка произвольной формы собирается по конвенции
   [кастомного пада](custom-pad.md).
+- [`<plating>`](plating.md) в корпусе даёт **только металлизированную стенку**
+  реза: `land` и `inner_land` там не пишутся, медь в плоскости рисует пад.
 - Геометрия слоёв записана **абсолютными номерами**, как будто корпус лежит
   сверху; сторона возникает при размещении — см. [модель слоёв](layer-model.md).
 
