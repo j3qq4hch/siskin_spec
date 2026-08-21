@@ -245,8 +245,9 @@ shape-attrs =
 shape-sch = element shape { shape-attrs, attribute rot { rot-ortho }? }
 shape-brd = element shape { shape-attrs, attribute rot { rot-free  }? }
 
-# Полигон — модель пера. Контур замкнут по построению, минимум три
-# вершины, обход CCW (направление обхода схемой не проверяется).
+# Полигон — модель пера. Контур замкнут по построению, минимум три вершины.
+# Направление обхода не проверяется и проверять его НЕ НАДО: оно ничего не
+# значит само по себе — форму задаёт порядок вершин вместе со знаками curve.
 polygon-attrs =
   attribute layer { layer-ref },
   attribute fill { percent }?,
