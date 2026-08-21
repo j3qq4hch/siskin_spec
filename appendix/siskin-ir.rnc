@@ -317,12 +317,14 @@ layer =
 
 # Markdown-блок. h — минимум, а не потолок. Содержимое — текст элемента.
 # mirror — как у <text>: таблица на нижней шёлкографии печатается зеркальной.
+# height — БАЗОВАЯ высота знака, от неё считаются уровни заголовков. Имя то же,
+# что у <text>: один факт носит одно имя.
 # Вариантов два по тому же признаку, что у <text> и <shape>: ортогонально
 # пространство или нет.
 note-attrs =
   attribute x { um }, attribute y { um },
   attribute w { um-pos }, attribute h { um-nonneg },
-  attribute size { um-pos },
+  attribute height { um-pos },
   attribute ratio { percent }?,
   attribute mirror { bool }?,
   attribute layer { layer-ref }
@@ -377,10 +379,14 @@ pin =
 
 # Семейство: гейты + устройства + атрибуты. Дети лежат голыми.
 # library не пишется в .silib — там библиотека и есть файл.
+# Гейт есть ВСЕГДА: символ и есть гейт, а компонента без символа не бывает —
+# его нечем поставить на схему. Пустым бывает набор выводов, не гейт: у
+# крепёжной стойки и логотипа символ без <pin>. Устройств может не быть —
+# тогда компонент живёт только на схеме (символ питания, рамка листа).
 component-body =
   attribute name { lib-name },
   attribute prefix { text }?,
-  ( gate | device | attr )*
+  ( gate+ & device* & attr* )
 
 component-lib = element component { component-body }
 component-prj = element component { attribute library { lib-name }, component-body }
@@ -428,9 +434,12 @@ footprint-prj = element footprint { attribute library { lib-name },
 
 # Сквозной пад. Слоя нет — пронизывает все медные слои по построению.
 # Пасты нет — его паяют волной, апертуре взяться неоткуда.
-# inner_dia опционален: не задан — кольцо как снаружи. Ноль законен:
+# На внутренних слоях пад КРУГЛЫЙ при любой форме наружной меди: паять там
+# нечего, а кольцо только соединяет ствол со слоем. inner_dia опционален:
+# не задан — круг min(width, height), вписанный в медь пада. Ноль законен:
 # кольца на внутренних нет вовсе, IPC это допускает.
-# Пад, чей центр лежит на резе 120, — кастеллация; схемой это не выражается.
+# Пад, чей центр лежит на резе 120, — площадка на резе (на краю платы её
+# зовут кастеллацией); схемой это не выражается.
 pad =
   element pad {
     attribute name { pad-name },
@@ -446,6 +455,9 @@ pad =
 
 # SMD-пад. layer обязателен и только медный: живёт на одном этаже.
 # Внутренних SMD не бывает — отсюда домен ровно из двух значений.
+# virtual="1" — пад БЕЗ МЕДИ: носитель имени кастомного пада. Медь ему рисуют
+# <polygon> или <plating>, он её называет. roundness, stopmask и paste у такого
+# не пишутся — все три про медь, которой нет; схемой это не выражается.
 smd =
   element smd {
     attribute name { pad-name },
@@ -456,7 +468,8 @@ smd =
     attribute roundness { percent }?,
     attribute thermals { percent }?,
     attribute stopmask { bool }?,
-    attribute paste { bool }?
+    attribute paste { bool }?,
+    attribute virtual { bool }?
   }
 
 # Отверстие без меди. Имени нет — ссылаться неоткуда.
@@ -584,6 +597,9 @@ segment =
   }
 
 # Метка. Имя цепи в ней НЕ хранится — берётся у <net>.
+# Набор начертания полный и тот же, что у <text>: метка это надпись, и урезать
+# его не за что — иначе цепь можно было бы подписать только штрихом
+# умолчательной толщины.
 label =
   element label {
     attribute x { um }, attribute y { um },
@@ -591,6 +607,8 @@ label =
     attribute width { um-pos }?,
     attribute rot { rot-ortho }?,
     attribute align { align-value },
+    attribute ratio { percent }?,
+    attribute mirror { bool }?,
     attribute layer { layer-ref },
     attribute style { label-style }
   }
