@@ -61,6 +61,13 @@ um        = xsd:int
 um-pos    = xsd:int { minInclusive = "1" }
 um-nonneg = xsd:int { minInclusive = "0" }
 
+# Библиотечное имя: библиотеки, компонента, символа, корпуса. Чужая каталожная
+# строка — приводить и чистить её нельзя, вернуться наружу она обязана собой.
+# Запрещено ровно одно: двоеточие. Оно разделяет пару библиотека:имя, и второе
+# внутри половины сделало бы сборку пары в строку двусмысленной. У корпуса
+# добавляется своё: имя едет в имя файла 3D-модели.
+lib-name = xsd:token { pattern = "[^:]+" }
+
 # Углы. Целые миллиградусы.
 rot-free  = xsd:integer { minInclusive = "0" maxInclusive = "359999" }
 
@@ -336,7 +343,7 @@ note-brd = element note { note-attrs, attribute rot { rot-free  }?, text }
 # В проект они не переезжают — элемента <library> там не существует.
 library =
   element library {
-    attribute name { text },
+    attribute name { lib-name },
     attribute version { fmt-version }?,
     ( symbol-lib* & footprint-lib* & component-lib* & attr* )
   }
@@ -348,9 +355,9 @@ library =
 symbol-content = ( line-graphic | arc-graphic | shape-sch | polygon-free
                  | pin | txt-sch )*
 
-symbol-lib = element symbol { attribute name { text }, symbol-content }
-symbol-prj = element symbol { attribute library { text },
-                              attribute name { text }, symbol-content }
+symbol-lib = element symbol { attribute name { lib-name }, symbol-content }
+symbol-prj = element symbol { attribute library { lib-name },
+                              attribute name { lib-name }, symbol-content }
 
 # Символ модуля — внешность канала. Имени нет: его никто не адресует.
 symbol-anon   = element symbol { symbol-content }
@@ -371,19 +378,19 @@ pin =
 # Семейство: гейты + устройства + атрибуты. Дети лежат голыми.
 # library не пишется в .silib — там библиотека и есть файл.
 component-body =
-  attribute name { text },
+  attribute name { lib-name },
   attribute prefix { text }?,
   ( gate | device | attr )*
 
 component-lib = element component { component-body }
-component-prj = element component { attribute library { text }, component-body }
+component-prj = element component { attribute library { lib-name }, component-body }
 
 # Гейт — единственный способ объявить символ, даже для односекционного.
 # x/y — раскладка компонента в библиотеке, не размещение на схеме.
 gate =
   element gate {
     attribute name { text },
-    attribute symbol { text },
+    attribute symbol { lib-name },
     attribute x { um }, attribute y { um }
   }
 
@@ -392,7 +399,7 @@ gate =
 device =
   element device {
     attribute name { text },
-    attribute footprint { text },
+    attribute footprint { lib-name },
     ( map | attr )*
   }
 
@@ -415,9 +422,9 @@ footprint-content =
   ( line-graphic | arc-graphic | shape-brd | polygon-free | txt-brd
   | pad | smd | hole | plating | model3d )*
 
-footprint-lib = element footprint { attribute name { text }, footprint-content }
-footprint-prj = element footprint { attribute library { text },
-                                    attribute name { text }, footprint-content }
+footprint-lib = element footprint { attribute name { lib-name }, footprint-content }
+footprint-prj = element footprint { attribute library { lib-name },
+                                    attribute name { lib-name }, footprint-content }
 
 # Сквозной пад. Слоя нет — пронизывает все медные слои по построению.
 # Пасты нет — его паяют волной, апертуре взяться неоткуда.
@@ -544,8 +551,8 @@ schematic-mod = element schematic { schematic-item* }
 part =
   element part {
     attribute name { obj-name },
-    attribute library { text },
-    attribute component { text },
+    attribute library { lib-name },
+    attribute component { lib-name },
     attribute device { text }?,
     attr*
   }
