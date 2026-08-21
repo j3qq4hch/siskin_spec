@@ -338,14 +338,19 @@ library =
   element library {
     attribute name { text },
     attribute version { fmt-version }?,
-    ( symbol-pooled* & footprint* & component-lib* & attr* )
+    ( symbol-lib* & footprint-lib* & component-lib* & attr* )
   }
 
-# Символ живёт в пуле и адресуется гейтом по имени.
+# Символ живёт в пуле и адресуется гейтом по имени. В проекте пулы всех
+# библиотек сложены вместе, поэтому адресом становится пара (library, name) —
+# как у компонента. В .silib вторая половина не пишется: библиотека это файл.
+# Гейту второго поля не нужно: library берётся из его <component>.
 symbol-content = ( line-graphic | arc-graphic | shape-sch | polygon-free
                  | pin | txt-sch )*
 
-symbol-pooled = element symbol { attribute name { text }, symbol-content }
+symbol-lib = element symbol { attribute name { text }, symbol-content }
+symbol-prj = element symbol { attribute library { text },
+                              attribute name { text }, symbol-content }
 
 # Символ модуля — внешность канала. Имени нет: его никто не адресует.
 symbol-anon   = element symbol { symbol-content }
@@ -402,12 +407,17 @@ map =
 
 # Корпус — чистая геометрия посадочного места, о символе не знает.
 # Пространство платы: поворот свободен.
-footprint =
-  element footprint {
-    attribute name { text },
-    ( line-graphic | arc-graphic | shape-brd | polygon-free | txt-brd
-    | pad | smd | hole | plating | model3d )*
-  }
+# Адресуется парой (library, name), как символ и компонент; в .silib вторая
+# половина не пишется. Устройству второго поля не нужно: library из <component>.
+# 3D-модель за этой парой НЕ следует: она выбирается одним именем корпуса,
+# потому что описывает физический объект, а не запись в пуле.
+footprint-content =
+  ( line-graphic | arc-graphic | shape-brd | polygon-free | txt-brd
+  | pad | smd | hole | plating | model3d )*
+
+footprint-lib = element footprint { attribute name { text }, footprint-content }
+footprint-prj = element footprint { attribute library { text },
+                                    attribute name { text }, footprint-content }
 
 # Сквозной пад. Слоя нет — пронизывает все медные слои по построению.
 # Пасты нет — его паяют волной, апертуре взяться неоткуда.
@@ -471,8 +481,8 @@ project =
   element project {
     attribute name { text },
     attribute version { fmt-version }?,   # см. комментарий у library
-    ( symbol-pooled*
-    & footprint*
+    ( symbol-prj*
+    & footprint-prj*
     & component-prj*
     & class*
     & layer*

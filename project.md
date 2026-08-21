@@ -36,8 +36,8 @@
 
 ```xml
 <project name="board">
-  <symbol name="R"> … </symbol>         <!-- те же три пула, что в библиотеке -->
-  <footprint name="R0603"> … </footprint>
+  <symbol    name="R"     library="rc"> … </symbol>   <!-- три пула, как в библиотеке -->
+  <footprint name="R0603" library="rc"> … </footprint>
   <component name="RESISTOR" library="rc"> … </component>
 
   <class name="POWER" width="500" drill="600" />
@@ -51,8 +51,10 @@
 </project>
 ```
 
-Компоненты разных библиотек лежат в общем пуле и различаются
-[парой `(library, name)`](component.md).
+**Все три пула общие**, и содержимое каждого различается парой `(library, name)`:
+[символы](symbol.md), [корпуса](footprint.md) и [компоненты](component.md). Имя
+уникально внутри своей библиотеки, `library` говорит, внутри какой. В `.silib`
+вторая половина не пишется — там библиотека это сам файл.
 
 ## Одна схема, N плат
 
