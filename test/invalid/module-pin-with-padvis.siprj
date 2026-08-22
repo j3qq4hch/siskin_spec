@@ -1,0 +1,8 @@
+<!-- pin.md: у пина модуля видимость подписей не настраивается. padvis значить
+     нечему - падов у модуля нет; pinvis был бы приглашением соврать. -->
+<project name="c"><module name="M" prefix="M">
+  <symbol>
+    <pin name="VIN" direction="pwr" x="0" y="0" padvis="0"/>
+  </symbol>
+  <schematic/>
+</module><schematic/></project>

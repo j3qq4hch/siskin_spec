@@ -20,7 +20,19 @@
 #    структурные     — «медный слой обязан быть в стеке», «ровно один
 #                      <shape> на 98 в символе рамки», «сегменты одной
 #                      цепи не касаются», «есть пады — нужны выводы»,
-#                      «каждый вывод разварен в каждом устройстве»
+#                      «каждый вывод разварен в каждом устройстве»,
+#                      «символ с <shape> на 98 не несёт выводов, а его
+#                      компонент — устройств», «запись <layer> есть у
+#                      всякого используемого номера»
+#    порядок операций — mirror применяется ДО rot, оба вокруг собственного
+#                      начала объекта. В файле лежат два числа, порядок
+#                      их применения формой записи не выражается
+#    регистр          — обозначение приводится к верхнему регистру (это
+#                      домен ловит), но «Vref и VREF — один ключ», «RED и
+#                      red — один ключ 3D-модели» суть сравнение, не форма
+#    гигиена          — вырожденный провод в сегменте ЗАКОНЕН: так приезжает
+#                      стык выводов из чужого формата. Что его стоит развести
+#                      — линтер, а не отказ
 #    согласие сторон — <contactref> против <pinref> через <map>
 #    формулы         — где значение с = вычисляется, где остаётся текстом,
 #                      и где его писать не стоит: всё это роль носителя,
@@ -83,6 +95,10 @@ curve =
 # Проценты целые.
 percent = xsd:integer { minInclusive = "0" maxInclusive = "100" }
 
+# Толщина штриха к высоте знака. Верх не круглый: штрих в четверть высоты уже
+# смыкает контуры букв, выше начинается клякса. 0 — волосяной штрих.
+ratio-value = xsd:integer { minInclusive = "0" maxInclusive = "25" }
+
 # Булево — только 0 и 1. Ни yes/no, ни true/false, ни «ненулевое».
 bool = "0" | "1"
 
@@ -123,6 +139,16 @@ layer-brd = layer-noncopper | layer-anticopper
 # Прочие символы законны: +5V, N$1, USB_D+.
 obj-name = xsd:token { pattern = "[^\s@{}]+" }
 
+# ОБОЗНАЧЕНИЕ — детали, канала, элемента. То же, что obj-name, плюс запрет
+# строчных a-z: обозначение приводится к верхнему регистру НА ВХОДЕ, при импорте
+# и при вводе. Домен записывает инвариант, который создаёт приведение, — не
+# больше и не меньше: приведение ASCII-безопасное, локаль в нём не участвует
+# (турецкая дала бы из i не I, а İ), поэтому строчная кириллица законна, и
+# запрещать её домену нечем. Уцелевшая a-z означает, что файл писали в обход
+# и импортёра, и редактора. Именам ЦЕПЕЙ этот домен не достаётся: там регистр
+# значим, nRESET и vdd законны.
+ref-name = xsd:token { pattern = "[^\s@{}a-z]+" }
+
 # Имя атрибута: буквы, цифры, _ - #, точка только как разделитель
 # пространства. Ссылка >R1@BOM.MANF# вынимается из свободного текста, значит
 # домен обязан говорить, где она кончается — тот же довод, что у имени пада.
@@ -141,6 +167,10 @@ align-value =
 
 # Электрический характер вывода. nc здесь нет: не разварен — не создан.
 direction-value = "in" | "out" | "io" | "pas" | "pwr" | "sup" | "oc" | "hiz"
+
+# У пина модуля sup недоступен: роль символа питания читается у ДЕТАЛИ и
+# держится равенством value = имя цепи, а у канала носителя для value нет.
+direction-mod = "in" | "out" | "io" | "pas" | "pwr" | "oc" | "hiz"
 
 # Стиль метки — подмножество direction плюс crummy.
 label-style = "crummy" | "in" | "out" | "io" | "pwr" | "pas"
@@ -297,7 +327,7 @@ txt-attrs =
   attribute width { um-pos }?,
   attribute mirror { bool }?,
   attribute align { align-value },
-  attribute ratio { percent }?
+  attribute ratio { ratio-value }?
 
 txt-sch = element \text { txt-attrs, attribute rot { rot-ortho }?, text }
 txt-brd = element \text { txt-attrs, attribute rot { rot-free  }?, text }
@@ -335,7 +365,7 @@ note-attrs =
   attribute x { um }, attribute y { um },
   attribute w { um-pos }, attribute h { um-nonneg },
   attribute height { um-pos },
-  attribute ratio { percent }?,
+  attribute ratio { ratio-value }?,
   attribute mirror { bool }?,
   attribute layer { layer-ref }
 
@@ -364,27 +394,43 @@ library =
 # библиотек сложены вместе, поэтому адресом становится пара (library, name) —
 # как у компонента. В .silib вторая половина не пишется: библиотека это файл.
 # Гейту второго поля не нужно: library берётся из его <component>.
-symbol-content = ( line-graphic | arc-graphic | shape-sch | polygon-free
-                 | pin | txt-sch )*
+symbol-graphics = line-graphic | arc-graphic | shape-sch | polygon-free | txt-sch
+
+symbol-content     = ( symbol-graphics | pin )*
+symbol-content-mod = ( symbol-graphics | pin-mod )*
 
 symbol-lib = element symbol { attribute name { lib-name }, symbol-content }
 symbol-prj = element symbol { attribute library { lib-name },
                               attribute name { lib-name }, symbol-content }
 
 # Символ модуля — внешность канала. Имени нет: его никто не адресует.
-symbol-anon   = element symbol { symbol-content }
+# Содержимое своё: пин у него урезан, см. pin-mod.
+symbol-anon   = element symbol { symbol-content-mod }
 
-# Вывод блока — детали или модуля, геометрия одна и та же.
-# «Порт или не порт» не хранится: вычисляется из того, чей это символ.
+# Вывод блока. Геометрия одна и та же у детали и у модуля; «порт или не порт»
+# не хранится — вычисляется из того, чей это символ.
+pin-geometry =
+  attribute name { text },
+  attribute x { um }, attribute y { um },
+  attribute rot { rot-ortho }?,
+  attribute length { um-nonneg }?
+
+# Вывод пулового символа: видимость подписей — инструмент автора библиотеки.
 pin =
   element pin {
-    attribute name { text },
+    pin-geometry,
     attribute direction { direction-value },
-    attribute x { um }, attribute y { um },
-    attribute rot { rot-ortho },
-    attribute length { um-nonneg }?,
     attribute pinvis { bool }?,
     attribute padvis { bool }?
+  }
+
+# Вывод модуля. Видимость подписей не настраивается: padvis значить нечему
+# (падов нет), а pinvis был бы приглашением соврать — подпись производна от
+# имени внутренней цепи и разошлась бы с ней при первом переименовании.
+pin-mod =
+  element pin {
+    pin-geometry,
+    attribute direction { direction-mod }
   }
 
 # Семейство: гейты + устройства + атрибуты. Дети лежат голыми.
@@ -573,7 +619,7 @@ schematic-mod = element schematic { schematic-item* }
 # device не пишется у компонента без устройств — рамки, символа питания.
 part =
   element part {
-    attribute name { obj-name },
+    attribute name { ref-name },
     attribute library { lib-name },
     attribute component { lib-name },
     attribute device { text }?,
@@ -584,7 +630,7 @@ part =
 # Дети-<text> — исчерпывающий список плейсхолдеров; смэша как флага нет.
 compinst =
   element compinst {
-    attribute part { obj-name },
+    attribute part { ref-name },
     attribute gate { text },
     attribute x { um }, attribute y { um },
     attribute rot { rot-ortho }?,
@@ -617,7 +663,7 @@ label =
     attribute width { um-pos }?,
     attribute rot { rot-ortho }?,
     attribute align { align-value },
-    attribute ratio { percent }?,
+    attribute ratio { ratio-value }?,
     attribute mirror { bool }?,
     attribute layer { layer-ref },
     attribute style { label-style }
@@ -628,7 +674,7 @@ label =
 # не различает (нужен резолв inst), поэтому атрибут опционален.
 pinref =
   element pinref {
-    attribute inst { obj-name },
+    attribute inst { ref-name },
     attribute gate { text }?,
     attribute pin { text }
   }
@@ -649,11 +695,11 @@ module =
 modinst =
   element modinst {
     attribute module { text },
-    attribute name { obj-name },
+    attribute name { ref-name },
     attribute x { um }, attribute y { um },
     attribute rot { rot-ortho }?,
     attribute mirror { bool }?,
-    attribute offset { xsd:int }?,
+    attribute offset { xsd:int { minInclusive = "0" } }?,
     attribute variant { text }?,
     ( attr | txt-sch )*
   }
@@ -671,14 +717,14 @@ variant =
 
 part-diff =
   element part {
-    attribute name { obj-name },
+    attribute name { ref-name },
     attribute exclude { bool }?,
     attr*
   }
 
 modinst-diff =
   element modinst {
-    attribute name { obj-name },
+    attribute name { ref-name },
     attribute variant { text }?,
     attribute exclude { bool }?,
     empty
@@ -728,7 +774,7 @@ rules =
 # с какой стороны. Поворот свободный: плата не ограничена шагом 90°.
 element-brd =
   element \element {
-    attribute name { obj-name },
+    attribute name { ref-name },
     attribute x { um }, attribute y { um },
     attribute rot { rot-free }?,
     attribute side { side-value }?,
@@ -774,6 +820,6 @@ plating =
 # связность не выводится из геометрии касания.
 contactref =
   element contactref {
-    attribute \element { obj-name },
+    attribute \element { ref-name },
     attribute pad { pad-name }
   }

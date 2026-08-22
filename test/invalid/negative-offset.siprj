@@ -1,0 +1,8 @@
+<!-- module-instance.md: offset - целое неотрицательное. Отрицательный дал бы
+     IC-4: дефис в обозначении законен, и вышло бы правдоподобное уродство. -->
+<project name="e"><module name="M" prefix="M">
+  <symbol><pin name="A" direction="pas" x="0" y="0"/></symbol>
+  <schematic/>
+</module><schematic>
+  <modinst module="M" name="M1" x="0" y="0" offset="-50"/>
+</schematic></project>

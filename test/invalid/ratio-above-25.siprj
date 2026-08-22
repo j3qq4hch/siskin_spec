@@ -1,0 +1,5 @@
+<!-- text.md: ratio - толщина штриха к высоте, домен 0-25. Штрих в четверть
+     высоты уже смыкает контуры букв, выше начинается клякса. -->
+<project name="a"><schematic>
+  <text x="0" y="0" height="1270" layer="97" align="center-center" ratio="40">R1</text>
+</schematic></project>

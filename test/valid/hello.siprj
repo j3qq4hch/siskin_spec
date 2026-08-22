@@ -1,6 +1,6 @@
 <!-- Минимальный проект: пул символов, компонент, гейт, деталь, размещение. -->
 <project name="hello">
-  <symbol name="R">
+  <symbol library="local" name="R">
     <shape x="0" y="0" w="5080" h="1780" outline="152" layer="94"/>
     <pin name="1" direction="pas" x="-5080" y="0" rot="0"/>
     <pin name="2" direction="pas" x="5080" y="0" rot="180000"/>

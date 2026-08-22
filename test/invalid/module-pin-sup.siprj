@@ -1,0 +1,9 @@
+<!-- pin.md: direction="sup" у пина модуля запрещён. Роль символа питания
+     читается у детали и держится равенством value = имя цепи; у канала
+     носителя для value нет. -->
+<project name="d"><module name="M" prefix="M">
+  <symbol>
+    <pin name="VCC" direction="sup" x="0" y="0"/>
+  </symbol>
+  <schematic/>
+</module><schematic/></project>

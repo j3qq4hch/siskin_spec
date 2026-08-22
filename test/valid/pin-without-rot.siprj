@@ -1,0 +1,12 @@
+<!-- units.md: rot - сквозное умолчание, всегда необязателен и означает 0.
+     Пин был единственным местом, где грамматика требовала его явно. -->
+<project name="g">
+  <symbol library="local" name="R">
+    <pin name="1" direction="pas" x="-5080" y="0"/>
+    <pin name="2" direction="pas" x="5080" y="0" rot="180000"/>
+  </symbol>
+  <component library="local" name="R-EU" prefix="R">
+    <gate name="" symbol="R" x="0" y="0"/>
+  </component>
+  <schematic/>
+</project>
