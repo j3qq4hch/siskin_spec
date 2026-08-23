@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Встречается в** | схема, модуль |
-| **Родители** | [`<schematic>`](schematic.md) |
+| **Родители** | [`<schematic>`](schematic.md), [`<variant>`](variant.md) — там [записью отличий](variant.md) |
 | **Дети** | [`<attr>`](attr.md) |
 
 ## Атрибуты

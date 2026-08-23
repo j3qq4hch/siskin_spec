@@ -221,7 +221,7 @@
 Канал выбирает вариант модуля **сам, независимо от соседей**:
 
 ```xml
-<modinst module="DCDC" name="DCDC1" variant="5V"  … />   <!-- база схемы -->
+<modinst module="DCDC" name="DCDC1" … />                  <!-- базовый: атрибут не пишется -->
 <modinst module="DCDC" name="DCDC2" variant="3V3" … />
 ```
 

@@ -32,7 +32,7 @@
 ```xml
 <footprint name="USB-B-TH">
   <line layer="120" width="1200" x1="…" y1="…" x2="…" y2="…" />   <!-- паз -->
-  <plating land="250" inner_land="0">                             <!-- медь и стенка -->
+  <plating land="250" inner_land="200">                           <!-- медь и стенка -->
     <line x1="…" y1="…" x2="…" y2="…" />
   </plating>
   <smd name="SHIELD" x="…" y="…" width="800" height="800"

@@ -14,7 +14,7 @@
 <symbol>                                        <!-- символ земли -->
   <line x1="-2540" y1="0" x2="2540" y2="0" width="254" layer="94" />
   <line x1="-1270" y1="-1270" x2="1270" y2="-1270" width="254" layer="94" />
-  <pin name="GND" x="0" y="2540" rot="270000" direction="sup" />
+  <pin name="1" x="0" y="2540" rot="270000" direction="sup" />
   <text x="0" y="-3810" height="1778" layer="96" align="center-center">&gt;VALUE</text>
 </symbol>
 ```
