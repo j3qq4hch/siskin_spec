@@ -186,8 +186,9 @@
 ## 7. Булевы значения — `0` и `1`
 
 Не `yes`/`no`, не `true`/`false`. Так записаны `mirror`, `pinvis`, `padvis`,
-`stopmask`, [`exclude`](variant.md), [`virtual`](smd.md) и `thermals`
-у [полигона](polygon.md).
+`stopmask`, `paste`, `visible` у [слоя](layer.md), [`virtual`](smd.md),
+`thermals` у [полигона](polygon.md) и `exclude` — [в записи
+варианта](variant.md) и [у элемента](element.md).
 
 > Имя `thermals` носят **два разных факта**, и путать их нельзя: у полигона это
 > `0`/`1` — генерировать ли барьеры вообще, у [пада](pad.md) и
