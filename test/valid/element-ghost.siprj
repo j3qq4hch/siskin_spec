@@ -1,0 +1,26 @@
+<!-- element.md: exclude="1" — призрак: деталь этой платы не касается,
+     но запись остаётся, потому что её возвращают на своё место. -->
+<project name="ghost">
+  <symbol library="local" name="LOGO">
+    <shape x="0" y="0" w="10160" h="10160" outline="152" layer="94"/>
+  </symbol>
+  <component library="local" name="LOGO" prefix="LOGO">
+    <gate name="" symbol="LOGO" x="0" y="0"/>
+    <device name="" footprint="LOGO-10"/>
+  </component>
+  <footprint library="local" name="LOGO-10">
+    <polygon layer="121" width="0">
+      <vertex x="0" y="0"/><vertex x="10000" y="0"/><vertex x="5000" y="8000"/>
+    </polygon>
+  </footprint>
+  <schematic>
+    <part name="LOGO1" library="local" component="LOGO" device=""/>
+    <compinst part="LOGO1" gate="" x="0" y="0"/>
+  </schematic>
+  <layout name="main">
+    <element name="LOGO1" x="120000" y="-40000" exclude="1"/>
+  </layout>
+  <layout name="mini">
+    <element name="LOGO1" x="30000" y="30000"/>
+  </layout>
+</project>

@@ -1,0 +1,8 @@
+<!-- pin.md: имя вывода без пробелов — скобки вынимают его из свободного
+     текста, >IC1{CLK IN}@NAME разорвало бы ссылку посреди фразы. -->
+<project name="a">
+  <symbol library="local" name="S">
+    <pin name="CLK IN" direction="in" x="-5080" y="0"/>
+  </symbol>
+  <schematic/>
+</project>
