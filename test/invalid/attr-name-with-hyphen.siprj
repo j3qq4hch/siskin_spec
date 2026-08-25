@@ -1,0 +1,5 @@
+<!-- naming.md: дефис в имени атрибута запрещён - он оператор вычитания,
+     и =IC1@Vout-IC2@Vout не разобралось бы вовсе. -->
+<project name="a"><schematic>
+  <attr name="AEC-Q" value=""/>
+</schematic></project>
