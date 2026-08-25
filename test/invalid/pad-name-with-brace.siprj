@@ -1,0 +1,5 @@
+<!-- pad.md: фигурных скобок в имени пада нет — >CON1{A}B}@NAME читалось бы
+     двумя способами. Запрещены обе, хотя разбор ломает закрывающая. -->
+<library name="l"><footprint name="f">
+  <smd name="A}B" x="0" y="0" width="1000" height="1000" layer="1"/>
+</footprint></library>

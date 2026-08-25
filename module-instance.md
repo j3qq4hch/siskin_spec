@@ -243,8 +243,8 @@
 
 ```xml
 <modinst module="DCDC" name="DCDC1">
-  <attr name="title" value="=DOC@project_title" />   <!-- читает схему -->
-  <attr name="Vout"  value="5.0" />                       <!-- свой параметр -->
+  <attr name="title"   value="=DOC@project_title" />   <!-- читает схему -->
+  <attr name="Vtarget" value="5.0" />                  <!-- свой параметр -->
 </modinst>
 ```
 
