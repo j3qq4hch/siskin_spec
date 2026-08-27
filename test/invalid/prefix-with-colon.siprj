@@ -1,0 +1,9 @@
+<!-- component.md: домен префикса - домен обозначения плюс запрет двоеточия:
+     им именуется деталь внутри канала, DCDC1:IC1, и префикс с двоеточием
+     породил бы имя, неотличимое от развёрнутого. -->
+<project name="a">
+  <component library="l" name="C" prefix="CON:">
+    <gate name="G$1" symbol="S" x="0" y="0"/>
+  </component>
+  <schematic/>
+</project>

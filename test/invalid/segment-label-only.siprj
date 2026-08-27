@@ -1,0 +1,9 @@
+<!-- segment.md: провод в сегменте есть ВСЕГДА - метка одна сегмента не
+     составляет, ей нечего подписывать. -->
+<project name="a"><schematic>
+  <net name="N">
+    <segment>
+      <label x="0" y="0" height="1778" align="bottom-left" layer="95" style="pas"/>
+    </segment>
+  </net>
+</schematic></project>

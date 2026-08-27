@@ -1,0 +1,10 @@
+<!-- layer-model.md: top - 1, bottom - -1, внутренние - 2, 3, ... Минус есть
+     только у парных; внутренние standalone и всегда положительны. -->
+<project name="a">
+  <schematic/>
+  <layout name="main" stack="35[1500]35[1500]35">
+    <signal name="N">
+      <line x1="0" y1="0" x2="1000" y2="0" width="152" layer="-2"/>
+    </signal>
+  </layout>
+</project>

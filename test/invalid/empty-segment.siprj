@@ -1,0 +1,4 @@
+<!-- segment.md: пустой сегмент бессмыслен - провода без подключений не бывает. -->
+<project name="a"><schematic>
+  <net name="N"><segment/></net>
+</schematic></project>
