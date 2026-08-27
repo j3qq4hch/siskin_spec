@@ -1,0 +1,4 @@
+<!-- units.md: длина вне +-2 000 000 um - ошибка формата. -->
+<project name="a"><schematic>
+  <compinst part="R1" gate="G$1" x="2500000" y="0"/>
+</schematic></project>
